@@ -2,7 +2,14 @@
 name = "emojicp"
 version = "0.1.0"
 edition = "2021"
+description = "A command-line tool to search for emojis by name"
+keywords = ["emoji", "copy"]
+categories = ["command-line-utilities"]
 authors = ["Nicholas R. Smith"]
+license = "GPL-3.0-or-later"
+homepage = "https://github.com/johnDeSilencio/emojicp"
+documentation = "https://docs.rs/emojicp"
+readme = "README.md"
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 

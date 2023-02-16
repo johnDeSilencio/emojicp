@@ -170,13 +170,20 @@ impl EmojiCarousel {
                     }
                 }
                 Key::Backspace => {
-                    self.mode = UserMode::Search;
-                    self.delete_last_char();
-                    self.search_term = remove_last_char(&self.search_term);
+                    if self.search_term.len() > 0 {
+                        self.mode = UserMode::Search;
+                        self.move_cursor_search();
+                        self.delete_last_char();
+                        self.search_term = remove_last_char(&self.search_term);
 
-                    self.update_suggestions();
-                    self.draw_suggestions();
-                    self.move_cursor_search();
+                        if self.search_term.is_empty() {
+                            self.clear_suggestions();
+                        } else {
+                            self.update_suggestions();
+                            self.draw_suggestions();
+                            self.move_cursor_search();
+                        }
+                    }
                 }
                 Key::Up => {
                     if self.mode == UserMode::Select {
@@ -201,6 +208,10 @@ impl EmojiCarousel {
                     // Update tracking of cursor
                     self.cursor_pos.x += 1;
                     self.search_pos.x += 1;
+
+                    self.update_suggestions();
+                    self.draw_suggestions();
+                    self.move_cursor_search();
                 }
                 _ => {} // do nothing for other keys
             }
@@ -263,15 +274,7 @@ impl EmojiCarousel {
         self.move_cursor(self.cursor_pos);
     }
 
-    fn update_suggestions(&mut self) {
-        // step #1: perform search on tree
-        let tolerance = 5;
-        let key = Suggestion {
-            description: self.search_term.clone(),
-            emoji: "".to_owned(), // doesn't matter for search
-        };
-
-        // step #1.5: clear all lines so far and draw the new lines
+    fn clear_suggestions(&mut self) {
         let old_pos = self.cursor_pos;
         self.move_cursor_select();
         for _ in &self.suggestions.lines {
@@ -281,6 +284,18 @@ impl EmojiCarousel {
 
         // step #2: clear current suggestions
         self.suggestions.lines.clear();
+    }
+
+    fn update_suggestions(&mut self) {
+        // step #1: perform search on tree
+        let tolerance = 5;
+        let key = Suggestion {
+            description: self.search_term.clone(),
+            emoji: "".to_owned(), // doesn't matter for search
+        };
+
+        // step #2: clear screen and member variable suggestions
+        self.clear_suggestions();
 
         let search_results = self.tree.find(&key, tolerance);
 
@@ -297,9 +312,12 @@ impl EmojiCarousel {
         }
 
         // step #3: save results
-        self.suggestions
-            .lines
-            .extend_from_slice(&mut new_suggestions[..5]);
+        self.suggestions.lines = new_suggestions
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i < 5)
+            .map(|(_, e)| e.to_owned())
+            .collect();
     }
 
     fn draw_suggestions(&mut self) {

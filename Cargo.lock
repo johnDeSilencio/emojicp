@@ -52,7 +52,8 @@ checksum = "bef38d45163c2f1dde094a7dfd33ccf595c92905c8f8f4fdc18d06fb1037718a"
 [[package]]
 name = "bk-tree"
 version = "0.5.0"
-source = "git+https://github.com/johnDeSilencio/rust-bk-tree?branch=feature/serde_support#6ed2b2962e9deb67ac228f9ea14a358746421125"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a8283fb8e64b873918f8bc527efa6aff34956296e48ea750a9c909cd47c01546"
 dependencies = [
  "fnv",
  "serde",

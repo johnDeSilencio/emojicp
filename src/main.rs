@@ -4,7 +4,6 @@ mod search;
 mod suggestion;
 
 use bk_tree::BKTree;
-use search::fill_bk_tree;
 use std::path::Path;
 use suggestion::{EmojiCarousel, Suggestion};
 

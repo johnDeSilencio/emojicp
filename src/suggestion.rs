@@ -6,7 +6,6 @@ use std::io::{stdin, stdout, Write};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
-use termion::{color, style};
 
 // What mode the application is in
 #[derive(PartialEq)]

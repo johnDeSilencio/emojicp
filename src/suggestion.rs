@@ -27,7 +27,11 @@ pub struct Suggestion {
 
 impl fmt::Display for Suggestion {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{}\t{}", self.description, self.emoji)
+        if self.description.len() >= 8 {
+            write!(f, "{}\t{}", self.description, self.emoji)
+        } else {
+            write!(f, "{}\t\t{}", self.description, self.emoji)
+        }
     }
 }
 

@@ -174,10 +174,7 @@ impl EmojiCarousel {
                         let _ = stdout.flush();
                         break;
                     } else {
-                        self.clear_suggestions();
-                        self.update_suggestions();
-                        self.draw_suggestions();
-                        self.move_cursor_search();
+                        self.redraw();
                     }
                 }
                 Key::Backspace => {
@@ -190,10 +187,7 @@ impl EmojiCarousel {
                         if self.search_term.is_empty() {
                             self.clear_suggestions();
                         } else {
-                            self.clear_suggestions();
-                            self.update_suggestions();
-                            self.draw_suggestions();
-                            self.move_cursor_search();
+                            self.redraw();
                         }
                     }
                 }
@@ -221,10 +215,7 @@ impl EmojiCarousel {
                     self.cursor_pos.x += 1;
                     self.search_pos.x += 1;
 
-                    self.clear_suggestions();
-                    self.update_suggestions();
-                    self.draw_suggestions();
-                    self.move_cursor_search();
+                    self.redraw();
                 }
                 _ => {} // do nothing for other keys
             }
@@ -249,7 +240,7 @@ impl EmojiCarousel {
 
             // Update member variable
             self.cursor_pos.x = back_one.x;
-            self.search_pos = self.cursor_pos
+            self.search_pos = self.cursor_pos;
         }
     }
 
@@ -340,6 +331,13 @@ impl EmojiCarousel {
             print!("{}\r", termion::clear::CurrentLine);
             println!("{}", suggestion);
         }
+    }
+
+    fn redraw(&mut self) {
+        self.clear_suggestions();
+        self.update_suggestions();
+        self.draw_suggestions();
+        self.move_cursor_search();
     }
 }
 

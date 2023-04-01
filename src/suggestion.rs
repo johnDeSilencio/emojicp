@@ -1,8 +1,6 @@
 use crate::clipboard::set_clipboard;
 use crate::pair::EmojiPair;
 use bk_tree::BKTree;
-use serde::{Deserialize, Serialize};
-use std::fmt;
 use std::io::{stdin, stdout, Stdout, Write};
 use termion::event::Key;
 use termion::input::TermRead;

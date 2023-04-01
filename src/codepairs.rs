@@ -1,3 +1,8 @@
+// Allow dead code because this static array is
+// only ever used by build.rs to generate the file
+// emojitree.raw which is embedded into the executable
+// at compile time.
+#[allow(dead_code)]
 pub static RAW_PAIRS: &[(&'static str, &'static str)] = &[
     ("grinning", "😀"),
     ("smiley", "😃"),

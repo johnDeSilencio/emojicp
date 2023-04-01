@@ -34,5 +34,8 @@ pub fn fill_bk_tree() {
 }
 
 fn main() {
+    // Only re-build and serialize the BKTree if codepairs.rs changes
+    println!("cargo:rerun-if-changed=src/codepairs.rs");
+
     fill_bk_tree();
 }

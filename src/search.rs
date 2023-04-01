@@ -18,7 +18,7 @@ mod tests {
     #[test]
     fn test_find_exaxt() {
         // step #1: open file
-        let path: &Path = Path::new("./emojitree.raw");
+        let path: &Path = Path::new("./public/static/emojitree.raw");
         let encoded_tree = std::fs::read(path).unwrap();
 
         // step #2: decode BKTree

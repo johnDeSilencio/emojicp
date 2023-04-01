@@ -2,10 +2,11 @@ use crate::clipboard::set_clipboard;
 use bk_tree::BKTree;
 use serde::{Deserialize, Serialize};
 use std::fmt;
-use std::io::{stdin, stdout, Write};
+use std::io::{stdin, stdout, Stdout, Write};
 use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
+use termion::raw::RawTerminal;
 
 // What mode the application is in
 #[derive(PartialEq)]
@@ -134,7 +135,7 @@ impl EmojiCarousel {
         let search_prompt = "Emoji you are looking for: ";
         println!("{}\r", search_prompt);
 
-        self.search_pos.x += search_prompt.len();
+        self.search_pos.x = search_prompt.len() + 1;
         self.search_pos.y = 1;
         self.select_pos.x = 1;
         self.select_pos.y = 2;
@@ -145,6 +146,11 @@ impl EmojiCarousel {
         }
 
         self.move_cursor(self.cursor_pos);
+    }
+
+    fn clear_screen(&self, stdout: &mut RawTerminal<Stdout>) {
+        print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
+        stdout.flush().expect("stdout flushes successfully");
     }
 
     pub fn get_current_selection(&self) -> Option<&Suggestion> {
@@ -158,15 +164,17 @@ impl EmojiCarousel {
         for c in stdin.keys() {
             match c.unwrap() {
                 Key::Ctrl('c') => {
+                    self.clear_screen(&mut stdout);
                     break;
                 }
                 Key::Char('\n') => {
                     if self.mode == UserMode::Select {
                         set_clipboard(self.get_current_selection().unwrap().emoji.to_string());
                         print!("{}{}\r", termion::clear::All, termion::cursor::Goto(1, 1));
-                        stdout.flush();
+                        let _ = stdout.flush();
                         break;
                     } else {
+                        self.clear_suggestions();
                         self.update_suggestions();
                         self.draw_suggestions();
                         self.move_cursor_search();
@@ -182,6 +190,7 @@ impl EmojiCarousel {
                         if self.search_term.is_empty() {
                             self.clear_suggestions();
                         } else {
+                            self.clear_suggestions();
                             self.update_suggestions();
                             self.draw_suggestions();
                             self.move_cursor_search();
@@ -212,6 +221,7 @@ impl EmojiCarousel {
                     self.cursor_pos.x += 1;
                     self.search_pos.x += 1;
 
+                    self.clear_suggestions();
                     self.update_suggestions();
                     self.draw_suggestions();
                     self.move_cursor_search();
@@ -245,7 +255,7 @@ impl EmojiCarousel {
 
     fn move_cursor(&mut self, new_pos: Coordinates) {
         print!("{}", termion::cursor::Goto(new_pos.x(), new_pos.y()));
-        stdout().flush();
+        let _ = stdout().flush();
         self.cursor_pos = new_pos;
     }
 
@@ -254,7 +264,7 @@ impl EmojiCarousel {
     }
 
     fn move_cursor_select(&mut self) {
-        self.move_cursor(self.select_pos);
+        self.move_cursor(Coordinates { x: 1, y: 2 });
     }
 
     fn move_cursor_up(&mut self) {
@@ -280,25 +290,23 @@ impl EmojiCarousel {
     fn clear_suggestions(&mut self) {
         let old_pos = self.cursor_pos;
         self.move_cursor_select();
+
         for _ in &self.suggestions.lines {
             println!("{}\r", termion::clear::CurrentLine);
         }
         self.move_cursor(old_pos);
-
-        // step #2: clear current suggestions
-        self.suggestions.lines.clear();
     }
 
     fn update_suggestions(&mut self) {
+        // step #0: clear current suggestions
+        self.suggestions.lines.clear();
+
         // step #1: perform search on tree
         let tolerance = 5;
         let key = Suggestion {
             description: self.search_term.clone(),
             emoji: "".to_owned(), // doesn't matter for search
         };
-
-        // step #2: clear screen and member variable suggestions
-        self.clear_suggestions();
 
         let search_results = self.tree.find(&key, tolerance);
 
@@ -330,7 +338,7 @@ impl EmojiCarousel {
         // step #2: clear all lines so far and draw the new lines
         for suggestion in &self.suggestions.lines {
             print!("{}\r", termion::clear::CurrentLine);
-            println!("{}", suggestion)
+            println!("{}", suggestion);
         }
     }
 }

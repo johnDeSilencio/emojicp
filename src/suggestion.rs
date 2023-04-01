@@ -62,12 +62,6 @@ impl Coordinates {
     }
 }
 
-#[derive(Debug)]
-struct TerminalSize {
-    pub width: usize,
-    pub height: usize,
-}
-
 pub trait Carousel {
     fn new() -> Self;
     fn run(&mut self);
@@ -76,9 +70,6 @@ pub trait Carousel {
 pub struct EmojiCarousel {
     // The BKTree used for fuzzy searches
     tree: BKTree<Suggestion>,
-
-    // The number of rows and columns in the terminal
-    terminal_size: TerminalSize,
 
     // What mode the application is in, i.e. if the user
     // is typing to perform a search or selecting an emoji
@@ -110,16 +101,10 @@ pub struct EmojiCarousel {
 
 impl EmojiCarousel {
     pub fn new(tree: BKTree<Suggestion>) -> Self {
-        let size = termion::terminal_size().expect("termion gets the # of terminal rows & columns");
-
         let starting_pos = Coordinates { x: 1, y: 1 };
 
         Self {
             tree: tree,
-            terminal_size: TerminalSize {
-                width: size.0 as usize,
-                height: size.1 as usize,
-            },
             mode: UserMode::Search,
             search_term: "".to_owned(),
             current_selection: 0,
@@ -132,10 +117,15 @@ impl EmojiCarousel {
 
     fn show(&mut self) {
         print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
-        let search_prompt = "Emoji you are looking for: ";
-        println!("{}\r", search_prompt);
+        let search_prompt = "Emoji you are searching for 🧐:";
+        println!(
+            "{}{}{}\r",
+            termion::style::Bold,
+            search_prompt,
+            termion::style::Reset
+        );
 
-        self.search_pos.x = search_prompt.len() + 1;
+        self.search_pos.x = search_prompt.len();
         self.search_pos.y = 1;
         self.select_pos.x = 1;
         self.select_pos.y = 2;
@@ -167,16 +157,17 @@ impl EmojiCarousel {
                     self.clear_screen(&mut stdout);
                     break;
                 }
-                Key::Char('\n') => {
-                    if self.mode == UserMode::Select {
+                Key::Char('\n') => match self.mode {
+                    UserMode::Search => {
+                        self.redraw();
+                    }
+                    UserMode::Select => {
                         set_clipboard(self.get_current_selection().unwrap().emoji.to_string());
                         print!("{}{}\r", termion::clear::All, termion::cursor::Goto(1, 1));
                         let _ = stdout.flush();
                         break;
-                    } else {
-                        self.redraw();
                     }
-                }
+                },
                 Key::Backspace => {
                     if self.search_term.len() > 0 {
                         self.mode = UserMode::Search;
@@ -191,20 +182,21 @@ impl EmojiCarousel {
                         }
                     }
                 }
-                Key::Up => {
-                    if self.mode == UserMode::Select {
-                        self.move_cursor_select();
+                Key::Up => match self.mode {
+                    UserMode::Search => {}
+                    UserMode::Select => {
                         self.move_cursor_up();
                     }
-                }
-                Key::Down => {
-                    if self.mode == UserMode::Search {
+                },
+                Key::Down => match self.mode {
+                    UserMode::Search => {
                         self.mode = UserMode::Select;
                         self.move_cursor_select();
-                    } else {
+                    }
+                    UserMode::Select => {
                         self.move_cursor_down();
                     }
-                }
+                },
                 Key::Char(typed_char) => {
                     self.mode = UserMode::Search;
                     self.move_cursor_search();
@@ -219,7 +211,6 @@ impl EmojiCarousel {
                 }
                 _ => {} // do nothing for other keys
             }
-            stdout.flush().expect("stdout flushes successfully");
         }
     }
 

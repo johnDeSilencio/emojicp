@@ -6,7 +6,6 @@ mod suggestion;
 
 use bk_tree::BKTree;
 use emoji::Emoji;
-use std::path::Path;
 use suggestion::{EmojiCarousel, Suggestion};
 
 fn main() {

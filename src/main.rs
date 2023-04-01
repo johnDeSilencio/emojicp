@@ -2,7 +2,6 @@ mod clipboard;
 mod codepairs;
 mod emoji;
 mod pair;
-mod search;
 mod suggestion;
 
 use bk_tree::BKTree;

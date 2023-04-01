@@ -13,7 +13,6 @@ mod tests {
 
     use crate::codepairs::RAW_PAIRS;
     use crate::pair::EmojiPair;
-    use bincode;
     use bk_tree::BKTree;
 
     #[test]
@@ -31,7 +30,7 @@ mod tests {
                 emoji: "".to_string(),
             });
 
-            let unwrapped_result = result.expect(&format!("found {} emoji", pair.1));
+            let unwrapped_result = result.unwrap_or_else(|| panic!("found {} emoji", pair.1));
             assert_eq!(pair.1, unwrapped_result.emoji);
         }
     }

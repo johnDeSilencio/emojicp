@@ -3,7 +3,7 @@
 // emojitree.raw which is embedded into the executable
 // at compile time.
 #[allow(dead_code)]
-pub static RAW_PAIRS: &[(&'static str, &'static str)] = &[
+pub static RAW_PAIRS: &[(&str, &str)] = &[
     ("grinning", "😀"),
     ("smiley", "😃"),
     ("smile", "😄"),

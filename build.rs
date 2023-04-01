@@ -6,7 +6,6 @@ mod codepairs;
 
 use std::path::Path;
 
-use bincode;
 use bk_tree::{metrics, BKTree};
 use codepairs::RAW_PAIRS;
 use pair::EmojiPair;

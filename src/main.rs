@@ -15,7 +15,7 @@ fn main() {
     let encoded_tree = emoji_file.data.as_ref();
 
     // step #2: decode BKTree
-    let tree: BKTree<EmojiPair> = bincode::deserialize(&encoded_tree[..]).unwrap();
+    let tree: BKTree<EmojiPair> = bincode::deserialize(encoded_tree).unwrap();
 
     let mut viewer = EmojiCarousel::new(tree);
     viewer.run();

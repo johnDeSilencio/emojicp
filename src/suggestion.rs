@@ -81,7 +81,7 @@ impl EmojiCarousel {
         let starting_pos = Coordinates { x: 1, y: 1 };
 
         Self {
-            tree: tree,
+            tree,
             mode: UserMode::Search,
             search_term: "".to_owned(),
             current_selection: 0,
@@ -146,7 +146,7 @@ impl EmojiCarousel {
                     }
                 },
                 Key::Backspace => {
-                    if self.search_term.len() > 0 {
+                    if !self.search_term.is_empty() {
                         self.mode = UserMode::Search;
                         self.move_cursor_search();
                         self.delete_last_char();
@@ -193,7 +193,7 @@ impl EmojiCarousel {
 
     fn delete_last_char(&mut self) {
         // Move cursor back one
-        if self.search_term.len() > 0 {
+        if !self.search_term.is_empty() {
             let back_one = Coordinates {
                 x: self.cursor_pos.x - 1,
                 y: self.cursor_pos.y,

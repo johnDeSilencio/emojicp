@@ -1,4 +1,5 @@
 use crate::clipboard::set_clipboard;
+use crate::pair::EmojiPair;
 use bk_tree::BKTree;
 use serde::{Deserialize, Serialize};
 use std::fmt;
@@ -20,30 +21,8 @@ enum UserMode {
     Select,
 }
 
-#[derive(Debug, Clone, Serialize, Deserialize)]
-pub struct Suggestion {
-    pub description: String,
-    pub emoji: String,
-}
-
-impl fmt::Display for Suggestion {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.description.len() >= 8 {
-            write!(f, "{}\t{}", self.description, self.emoji)
-        } else {
-            write!(f, "{}\t\t{}", self.description, self.emoji)
-        }
-    }
-}
-
-impl AsRef<str> for Suggestion {
-    fn as_ref(&self) -> &str {
-        &self.description
-    }
-}
-
 struct Suggestions {
-    lines: Vec<Suggestion>,
+    lines: Vec<EmojiPair>,
 }
 
 #[derive(Debug, Clone, Copy)]
@@ -69,7 +48,7 @@ pub trait Carousel {
 
 pub struct EmojiCarousel {
     // The BKTree used for fuzzy searches
-    tree: BKTree<Suggestion>,
+    tree: BKTree<EmojiPair>,
 
     // What mode the application is in, i.e. if the user
     // is typing to perform a search or selecting an emoji
@@ -100,7 +79,7 @@ pub struct EmojiCarousel {
 }
 
 impl EmojiCarousel {
-    pub fn new(tree: BKTree<Suggestion>) -> Self {
+    pub fn new(tree: BKTree<EmojiPair>) -> Self {
         let starting_pos = Coordinates { x: 1, y: 1 };
 
         Self {
@@ -143,7 +122,7 @@ impl EmojiCarousel {
         stdout.flush().expect("stdout flushes successfully");
     }
 
-    pub fn get_current_selection(&self) -> Option<&Suggestion> {
+    pub fn get_current_selection(&self) -> Option<&EmojiPair> {
         self.suggestions.lines.get(self.current_selection as usize)
     }
 
@@ -285,21 +264,21 @@ impl EmojiCarousel {
 
         // step #1: perform search on tree
         let tolerance = 5;
-        let key = Suggestion {
+        let key = EmojiPair {
             description: self.search_term.clone(),
             emoji: "".to_owned(), // doesn't matter for search
         };
 
         let search_results = self.tree.find(&key, tolerance);
 
-        let mut ordered_suggestions: Vec<(u32, Suggestion)> = vec![];
+        let mut ordered_suggestions: Vec<(u32, EmojiPair)> = vec![];
         for result in search_results {
-            let suggestion: Suggestion = result.1.to_owned();
+            let suggestion: EmojiPair = result.1.to_owned();
             ordered_suggestions.push((result.0, suggestion));
         }
 
         ordered_suggestions.sort_by_key(|k| k.0);
-        let mut new_suggestions: Vec<Suggestion> = vec![];
+        let mut new_suggestions: Vec<EmojiPair> = vec![];
         for suggestion in ordered_suggestions {
             new_suggestions.push(suggestion.1);
         }

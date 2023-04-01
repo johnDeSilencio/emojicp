@@ -1,12 +1,14 @@
 mod clipboard;
 mod codepairs;
 mod emoji;
+mod pair;
 mod search;
 mod suggestion;
 
 use bk_tree::BKTree;
 use emoji::Emoji;
-use suggestion::{EmojiCarousel, Suggestion};
+use pair::EmojiPair;
+use suggestion::EmojiCarousel;
 
 fn main() {
     // step #1: get the raw bytes from the embedded file
@@ -14,7 +16,7 @@ fn main() {
     let encoded_tree = emoji_file.data.as_ref();
 
     // step #2: decode BKTree
-    let tree: BKTree<Suggestion> = bincode::deserialize(&encoded_tree[..]).unwrap();
+    let tree: BKTree<EmojiPair> = bincode::deserialize(&encoded_tree[..]).unwrap();
 
     let mut viewer = EmojiCarousel::new(tree);
     viewer.run();

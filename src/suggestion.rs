@@ -19,10 +19,6 @@ enum UserMode {
     Select,
 }
 
-struct Suggestions {
-    lines: Vec<EmojiPair>,
-}
-
 #[derive(Debug, Clone, Copy)]
 struct Coordinates {
     pub x: usize,
@@ -61,20 +57,13 @@ pub struct EmojiCarousel {
 
     // List of suggested emojis and their names
     // currently being shown to the user
-    suggestions: Suggestions,
+    suggestions: Vec<EmojiPair>,
 
-    // The actual position of the terminal cursor
+    // The current position of the terminal cursor
     cursor_pos: Coordinates,
-
-    // The location in the terminal the cursor
-    // needs to be to continue typing search characters
-    search_pos: Coordinates,
-
-    // The location in the terminal the cursor
-    // needs to be to select the first option from
-    // the list of currently displayed suggestions
-    select_pos: Coordinates,
 }
+
+const SEARCH_PROMPT: &'static str = "Emoji you are searching for 🧐:";
 
 impl EmojiCarousel {
     pub fn new(tree: BKTree<EmojiPair>) -> Self {
@@ -85,30 +74,24 @@ impl EmojiCarousel {
             mode: UserMode::Search,
             search_term: "".to_owned(),
             current_selection: 0,
-            suggestions: Suggestions { lines: vec![] },
-            search_pos: starting_pos,
-            select_pos: starting_pos,
+            suggestions: vec![],
             cursor_pos: starting_pos,
         }
     }
 
     fn show(&mut self) {
         print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
-        let search_prompt = "Emoji you are searching for 🧐:";
         println!(
             "{}{}{}\r",
             termion::style::Bold,
-            search_prompt,
+            SEARCH_PROMPT,
             termion::style::Reset
         );
 
-        self.search_pos.x = search_prompt.len();
-        self.search_pos.y = 1;
-        self.select_pos.x = 1;
-        self.select_pos.y = 2;
-        self.cursor_pos = self.search_pos;
+        self.cursor_pos.x = SEARCH_PROMPT.len();
+        self.cursor_pos.y = 1;
 
-        for line in self.suggestions.lines.iter() {
+        for line in self.suggestions.iter() {
             println!("{}\r", line);
         }
 
@@ -121,7 +104,7 @@ impl EmojiCarousel {
     }
 
     pub fn get_current_selection(&self) -> Option<&EmojiPair> {
-        self.suggestions.lines.get(self.current_selection as usize)
+        self.suggestions.get(self.current_selection as usize)
     }
 
     pub fn run(&mut self) {
@@ -154,6 +137,7 @@ impl EmojiCarousel {
 
                         if self.search_term.is_empty() {
                             self.clear_suggestions();
+                            self.suggestions.clear();
                         } else {
                             self.redraw();
                         }
@@ -162,16 +146,22 @@ impl EmojiCarousel {
                 Key::Up => match self.mode {
                     UserMode::Search => {}
                     UserMode::Select => {
-                        self.move_cursor_up();
+                        if self.suggestions.len() > 0 {
+                            self.move_cursor_up();
+                        }
                     }
                 },
                 Key::Down => match self.mode {
                     UserMode::Search => {
-                        self.mode = UserMode::Select;
-                        self.move_cursor_select();
+                        if self.suggestions.len() > 0 {
+                            self.mode = UserMode::Select;
+                            self.move_cursor_select();
+                        }
                     }
                     UserMode::Select => {
-                        self.move_cursor_down();
+                        if self.suggestions.len() > 0 {
+                            self.move_cursor_down();
+                        }
                     }
                 },
                 Key::Char(typed_char) => {
@@ -182,7 +172,6 @@ impl EmojiCarousel {
 
                     // Update tracking of cursor
                     self.cursor_pos.x += 1;
-                    self.search_pos.x += 1;
 
                     self.redraw();
                 }
@@ -208,7 +197,6 @@ impl EmojiCarousel {
 
             // Update member variable
             self.cursor_pos.x = back_one.x;
-            self.search_pos = self.cursor_pos;
         }
     }
 
@@ -219,7 +207,10 @@ impl EmojiCarousel {
     }
 
     fn move_cursor_search(&mut self) {
-        self.move_cursor(self.search_pos);
+        self.move_cursor(Coordinates {
+            x: SEARCH_PROMPT.len() + self.search_term.len(),
+            y: 1,
+        });
     }
 
     fn move_cursor_select(&mut self) {
@@ -229,7 +220,6 @@ impl EmojiCarousel {
     fn move_cursor_up(&mut self) {
         if self.cursor_pos.y > 2 {
             self.cursor_pos.y -= 1;
-            self.select_pos.y -= 1;
             self.current_selection -= 1;
         }
 
@@ -237,9 +227,8 @@ impl EmojiCarousel {
     }
 
     fn move_cursor_down(&mut self) {
-        if self.cursor_pos.y < self.suggestions.lines.len() + 1 {
+        if self.cursor_pos.y < self.suggestions.len() + 1 {
             self.cursor_pos.y += 1;
-            self.select_pos.y += 1;
             self.current_selection += 1;
         }
 
@@ -250,7 +239,7 @@ impl EmojiCarousel {
         let old_pos = self.cursor_pos;
         self.move_cursor_select();
 
-        for _ in &self.suggestions.lines {
+        for _ in &self.suggestions {
             println!("{}\r", termion::clear::CurrentLine);
         }
         self.move_cursor(old_pos);
@@ -258,7 +247,7 @@ impl EmojiCarousel {
 
     fn update_suggestions(&mut self) {
         // step #0: clear current suggestions
-        self.suggestions.lines.clear();
+        self.suggestions.clear();
 
         // step #1: perform search on tree
         let tolerance = 5;
@@ -281,8 +270,8 @@ impl EmojiCarousel {
             new_suggestions.push(suggestion.1);
         }
 
-        // step #3: save results
-        self.suggestions.lines = new_suggestions
+        // step #3: save the first 5 results
+        self.suggestions = new_suggestions
             .iter()
             .enumerate()
             .filter(|&(i, _)| i < 5)
@@ -295,7 +284,7 @@ impl EmojiCarousel {
         self.move_cursor_select();
 
         // step #2: clear all lines so far and draw the new lines
-        for suggestion in &self.suggestions.lines {
+        for suggestion in &self.suggestions {
             print!("{}\r", termion::clear::CurrentLine);
             println!("{}", suggestion);
         }

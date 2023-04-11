@@ -9,10 +9,13 @@ pub struct EmojiPair {
 
 impl fmt::Display for EmojiPair {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.description.len() >= 8 {
+        // Make sure that all the emojis are column aligned
+        if self.description.len() >= 16 {
             write!(f, "{}\t{}", self.description, self.emoji)
-        } else {
+        } else if self.description.len() >= 8 {
             write!(f, "{}\t\t{}", self.description, self.emoji)
+        } else {
+            write!(f, "{}\t\t\t{}", self.description, self.emoji)
         }
     }
 }

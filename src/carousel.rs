@@ -1,4 +1,4 @@
-use crate::clipboard::set_clipboard;
+use crate::clipboard;
 use crate::pair::EmojiPair;
 use bk_tree::BKTree;
 use std::io::{stdin, stdout, Stdout, Write};
@@ -19,6 +19,7 @@ enum UserMode {
     Select,
 }
 
+// Where the cursor is in the terminal
 #[derive(Debug, Clone, Copy)]
 struct Coordinates {
     pub x: usize,
@@ -33,11 +34,6 @@ impl Coordinates {
     fn y(&self) -> u16 {
         self.y as u16
     }
-}
-
-pub trait Carousel {
-    fn new() -> Self;
-    fn run(&mut self);
 }
 
 pub struct EmojiCarousel {
@@ -79,7 +75,7 @@ impl EmojiCarousel {
         }
     }
 
-    fn show(&mut self) {
+    fn init(&mut self) {
         print!("{}{}", termion::clear::All, termion::cursor::Goto(1, 1));
         println!(
             "{}{}{}\r",
@@ -110,7 +106,7 @@ impl EmojiCarousel {
     pub fn run(&mut self) {
         let mut stdout = stdout().into_raw_mode().unwrap();
         let stdin = stdin();
-        self.show();
+        self.init();
         for c in stdin.keys() {
             match c.unwrap() {
                 Key::Ctrl('c') => {
@@ -118,11 +114,9 @@ impl EmojiCarousel {
                     break;
                 }
                 Key::Char('\n') => match self.mode {
-                    UserMode::Search => {
-                        self.redraw();
-                    }
+                    UserMode::Search => {} // do nothing
                     UserMode::Select => {
-                        set_clipboard(self.get_current_selection().unwrap().emoji.to_string());
+                        clipboard::set(self.get_current_selection().unwrap().emoji.to_string());
                         print!("{}{}\r", termion::clear::All, termion::cursor::Goto(1, 1));
                         let _ = stdout.flush();
                         break;
@@ -227,12 +221,18 @@ impl EmojiCarousel {
     }
 
     fn move_cursor_down(&mut self) {
-        if self.cursor_pos.y < self.suggestions.len() + 1 {
+        if usize::from(self.cursor_pos.y) < self.suggestions.len() + 1 {
             self.cursor_pos.y += 1;
             self.current_selection += 1;
         }
 
         self.move_cursor(self.cursor_pos);
+    }
+
+    fn redraw(&mut self) {
+        self.update_suggestions();
+        self.draw_suggestions();
+        self.move_cursor_search();
     }
 
     fn clear_suggestions(&mut self) {
@@ -280,21 +280,14 @@ impl EmojiCarousel {
     }
 
     fn draw_suggestions(&mut self) {
-        // step #1: move cursor to search area
+        // step #1: move cursor to the top of the select area
         self.move_cursor_select();
 
-        // step #2: clear all lines so far and draw the new lines
+        // step #2: clear each suggestion and draw new suggestion
         for suggestion in &self.suggestions {
             print!("{}\r", termion::clear::CurrentLine);
             println!("{}", suggestion);
         }
-    }
-
-    fn redraw(&mut self) {
-        self.clear_suggestions();
-        self.update_suggestions();
-        self.draw_suggestions();
-        self.move_cursor_search();
     }
 }
 

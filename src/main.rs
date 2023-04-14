@@ -1,13 +1,13 @@
+mod carousel;
 mod clipboard;
 mod codepairs;
 mod emoji;
 mod pair;
-mod suggestion;
 
 use bk_tree::BKTree;
+use carousel::EmojiCarousel;
 use emoji::Emoji;
 use pair::EmojiPair;
-use suggestion::EmojiCarousel;
 
 fn main() {
     // step #1: get the raw bytes from the embedded file

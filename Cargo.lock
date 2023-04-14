@@ -9,6 +9,29 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f26201604c87b1e01bd3d98f8d5d9a8fcbb815e8cedb41ffccbeb4bf593a35fe"
 
 [[package]]
+name = "anyhow"
+version = "1.0.70"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7de8ce5e0f9f8d88245311066a578d72b7af3e7088f32783804676302df237e4"
+
+[[package]]
+name = "arboard"
+version = "2.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dc120354d1b5ec6d7aaf4876b602def75595937b5e15d356eb554ab5177e08bb"
+dependencies = [
+ "clipboard-win",
+ "log",
+ "objc",
+ "objc-foundation",
+ "objc_id",
+ "parking_lot",
+ "thiserror",
+ "winapi",
+ "x11rb 0.9.0",
+]
+
+[[package]]
 name = "arboard"
 version = "3.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -25,7 +48,7 @@ dependencies = [
  "parking_lot",
  "thiserror",
  "winapi",
- "x11rb",
+ "x11rb 0.10.1",
 ]
 
 [[package]]
@@ -33,6 +56,12 @@ name = "autocfg"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d468802bab17cbc0cc575e9b053f41e72aa36bfa6b7f55e3529ffa43161b97fa"
+
+[[package]]
+name = "base64"
+version = "0.13.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9e1b586273c5702936fe7b7d6896644d8be71e6314cfe09d3167c95f712589e8"
 
 [[package]]
 name = "bincode"
@@ -137,6 +166,19 @@ dependencies = [
 ]
 
 [[package]]
+name = "clipboard-anywhere"
+version = "0.2.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ed4a9bf2fda658a24855d106bdee1e15999acabca5fa4fc32dccd75d288664f7"
+dependencies = [
+ "anyhow",
+ "arboard 2.1.1",
+ "base64",
+ "duct",
+ "wsl",
+]
+
+[[package]]
 name = "clipboard-win"
 version = "4.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -233,13 +275,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "duct"
+version = "0.13.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "37ae3fc31835f74c2a7ceda3aeede378b0ae2e74c8f1c36559fcc9ae2a4e7d3e"
+dependencies = [
+ "libc",
+ "once_cell",
+ "os_pipe",
+ "shared_child",
+]
+
+[[package]]
 name = "emojicp"
 version = "0.1.0"
 dependencies = [
- "arboard",
+ "arboard 3.2.0",
  "bincode",
  "bk-tree",
  "clap",
+ "clipboard-anywhere",
  "rust-embed",
  "serde",
  "termion",
@@ -445,6 +500,19 @@ dependencies = [
 
 [[package]]
 name = "nix"
+version = "0.22.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e4916f159ed8e5de0082076562152a76b7a1f64a01fd9d1e0fea002c37624faf"
+dependencies = [
+ "bitflags",
+ "cc",
+ "cfg-if",
+ "libc",
+ "memoffset",
+]
+
+[[package]]
+name = "nix"
 version = "0.24.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fa52e972a9a719cecb6864fb88568781eb706bac2cd1d4f04a648542dbf78069"
@@ -525,6 +593,16 @@ name = "once_cell"
 version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "6f61fba1741ea2b3d6a1e3178721804bb716a68a6aeba1149b5d52e3d464ea66"
+
+[[package]]
+name = "os_pipe"
+version = "1.1.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "a53dbb20faf34b16087a931834cba2d7a73cc74af2b7ef345a4c8324e2409a12"
+dependencies = [
+ "libc",
+ "windows-sys 0.45.0",
+]
 
 [[package]]
 name = "os_str_bytes"
@@ -719,6 +797,16 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest",
+]
+
+[[package]]
+name = "shared_child"
+version = "1.0.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b0d94659ad3c2137fef23ae75b03d5241d633f8acded53d672decfa0e6e0caef"
+dependencies = [
+ "libc",
+ "winapi",
 ]
 
 [[package]]
@@ -964,13 +1052,31 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "447660ad36a13288b1db4d4248e857b510e8c3a225c822ba4fb748c0aafecffd"
 
 [[package]]
+name = "wsl"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f8dab7ac864710bdea6594becbea5b5050333cf34fefb0dc319567eb347950d4"
+
+[[package]]
+name = "x11rb"
+version = "0.9.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6e99be55648b3ae2a52342f9a870c0e138709a3493261ce9b469afe6e4df6d8a"
+dependencies = [
+ "gethostname",
+ "nix 0.22.3",
+ "winapi",
+ "winapi-wsapoll",
+]
+
+[[package]]
 name = "x11rb"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "592b4883219f345e712b3209c62654ebda0bb50887f330cbd018d0f654bfd507"
 dependencies = [
  "gethostname",
- "nix",
+ "nix 0.24.3",
  "winapi",
  "winapi-wsapoll",
  "x11rb-protocol",
@@ -982,5 +1088,5 @@ version = "0.10.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "56b245751c0ac9db0e006dc812031482784e434630205a93c73cfefcaabeac67"
 dependencies = [
- "nix",
+ "nix 0.24.3",
 ]

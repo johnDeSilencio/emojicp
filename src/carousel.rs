@@ -59,7 +59,7 @@ pub struct EmojiCarousel {
     cursor_pos: Coordinates,
 }
 
-const SEARCH_PROMPT: &'static str = "Emoji you are searching for 🧐:";
+const SEARCH_PROMPT: &str = "Emoji you are searching for 🧐:";
 
 impl EmojiCarousel {
     pub fn new(tree: BKTree<EmojiPair>) -> Self {
@@ -140,20 +140,20 @@ impl EmojiCarousel {
                 Key::Up => match self.mode {
                     UserMode::Search => {}
                     UserMode::Select => {
-                        if self.suggestions.len() > 0 {
+                        if !self.suggestions.is_empty() {
                             self.move_cursor_up();
                         }
                     }
                 },
                 Key::Down => match self.mode {
                     UserMode::Search => {
-                        if self.suggestions.len() > 0 {
+                        if !self.suggestions.is_empty() {
                             self.mode = UserMode::Select;
                             self.move_cursor_select();
                         }
                     }
                     UserMode::Select => {
-                        if self.suggestions.len() > 0 {
+                        if !self.suggestions.is_empty() {
                             self.move_cursor_down();
                         }
                     }
@@ -221,7 +221,7 @@ impl EmojiCarousel {
     }
 
     fn move_cursor_down(&mut self) {
-        if usize::from(self.cursor_pos.y) < self.suggestions.len() + 1 {
+        if self.cursor_pos.y < self.suggestions.len() + 1 {
             self.cursor_pos.y += 1;
             self.current_selection += 1;
         }
@@ -295,4 +295,21 @@ fn remove_last_char(search_term: &str) -> String {
     let mut chars = search_term.chars();
     chars.next_back(); // pop last char
     chars.as_str().to_string()
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::carousel::remove_last_char;
+
+    #[test]
+    fn test_remove_last_char() {
+        // empty string returns an empty string
+        assert_eq!("", remove_last_char(""));
+
+        // single character string returns empty string
+        assert_eq!("", remove_last_char("&"));
+
+        // only last character is removed from a string of characters
+        assert_eq!("abc", remove_last_char("abcd"));
+    }
 }

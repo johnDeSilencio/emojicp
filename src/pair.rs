@@ -25,3 +25,28 @@ impl AsRef<str> for EmojiPair {
         &self.description
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use crate::pair::EmojiPair;
+
+    #[test]
+    fn test_emoji_pair_display() {
+        let mut pair = EmojiPair {
+            description: String::from(""),
+            emoji: String::from("🐵"),
+        };
+
+        // emojis with short descriptions are displayed properly
+        pair.description = String::from("monkey");
+        assert_eq!("monkey\t\t\t🐵", format!("{}", pair));
+
+        // emojis with medium descriptions are displayed properly
+        pair.description = String::from("cool monkey");
+        assert_eq!("cool monkey\t\t🐵", format!("{}", pair));
+
+        // emojis with long descriptions are displayed properly
+        pair.description = String::from("very cool monkey");
+        assert_eq!("very cool monkey\t🐵", format!("{}", pair));
+    }
+}

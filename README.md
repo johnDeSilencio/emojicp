@@ -2,22 +2,32 @@
 
 ---
 
-A Rust command line tool to search for emojis by name
+A Rust command line tool to search for emojis by name and copy them to
+your clipboard.
 
 ### Installing
 
-To install `emojicp`, [download Rust](https://doc.rust-lang.org/cargo/getting-started/installation.html)
-and run the following command:
+1. [Download Rust](https://doc.rust-lang.org/cargo/getting-started/installation.html)
+2. Clone this repository
+3. Navigate to the new folder
+4. Run the following command:
 
 ```bash
-cargo install emojicp
+cargo install --path .
 ```
 
 ### Usage
 
-To search for an emoji, simply start typing.
+To search for an emoji, simply run `emojicp` like you would for any other
+command-line utility. After selecting the emoji you want, pressing `Enter`
+will copy the 
 
-![Searching for the "poop" emoji](./doc/out.gif)
+To copy the emoji to your clipboard without having to search for it, you can
+run the command with the name of the emoji as an argument to the utility, e.g.
+
+```bash
+$> emojicp 100 # the emoji 💯 will be copied to your clipboard
+```
 
 ### Acknowledgements
 

@@ -270,8 +270,17 @@ impl EmojiCarousel {
             new_suggestions.push(suggestion.1);
         }
 
-        // step #3: save the first 5 results
+        // step #2.5: filter out anything that doesn't almost match
         self.suggestions = new_suggestions
+            .iter()
+            .enumerate()
+            .filter(|&(_, v)| v.description.starts_with(self.search_term.as_str()))
+            .map(|(_, e)| e.to_owned())
+            .collect();
+
+        // step #3: save the first 5 results
+        self.suggestions = self
+            .suggestions
             .iter()
             .enumerate()
             .filter(|&(i, _)| i < 5)

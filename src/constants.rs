@@ -1,3 +1,5 @@
+const SEARCH_PROMPT: &str = "Emoji you are searching for 🔍:";
+
 // Allow dead code because this static array is
 // only ever used by build.rs to generate the file
 // emojitree.raw which is embedded into the executable

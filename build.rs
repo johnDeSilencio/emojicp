@@ -1,13 +1,13 @@
 #[path = "src/pair.rs"]
 mod pair;
 
-#[path = "src/codepairs.rs"]
-mod codepairs;
+#[path = "src/constants.rs"]
+mod constants;
 
 use std::path::Path;
 
 use bk_tree::{metrics, BKTree};
-use codepairs::RAW_PAIRS;
+use constants::RAW_PAIRS;
 use pair::EmojiPair;
 
 pub fn fill_bk_tree() {
@@ -34,7 +34,7 @@ pub fn fill_bk_tree() {
 
 fn main() {
     // Only re-build and serialize the BKTree if codepairs.rs changes
-    println!("cargo:rerun-if-changed=src/codepairs.rs");
+    println!("cargo:rerun-if-changed=src/constants.rs");
 
     fill_bk_tree();
 }

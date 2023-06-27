@@ -1,9 +1,3 @@
-mod carousel;
-mod clipboard;
-mod codepairs;
-mod emoji;
-mod pair;
-
 use bk_tree::BKTree;
 use carousel::EmojiCarousel;
 use emoji::Emoji;

@@ -1,8 +1,15 @@
+mod carousel;
+mod clipboard;
+mod constants;
+mod emoji;
+mod pair;
+mod types;
+
 use bk_tree::BKTree;
-use carousel::EmojiCarousel;
 use emoji::Emoji;
 use pair::EmojiPair;
 use std::env;
+use types::{Carousel, EmojiCarousel};
 
 fn main() {
     // Default to return successful exit code

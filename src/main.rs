@@ -1,26 +1,30 @@
 mod carousel;
+mod cli;
 mod clipboard;
 mod constants;
 mod emoji;
 mod pair;
 mod types;
 
+use crate::cli::entry;
+use crate::types::{Args, Carousel, EmojiCarousel, EmojiError};
 use bk_tree::BKTree;
+use clap::Parser;
 use emoji::Emoji;
 use pair::EmojiPair;
 use std::env;
-use types::{Carousel, EmojiCarousel};
 
+fn main() -> Result<(), EmojiError> {
+    // Parse the command-line input and run the program
+    let args = Args::parse();
+
+    entry(&args)
+}
+
+/*
 fn main() {
     // Default to return successful exit code
     let mut exit_code: i32 = 0;
-
-    // step #1: get the raw bytes from the embedded file
-    let emoji_file = Emoji::get("static/emojitree.raw").unwrap();
-    let encoded_tree = emoji_file.data.as_ref();
-
-    // step #2: decode BKTree
-    let tree: BKTree<EmojiPair> = bincode::deserialize(encoded_tree).unwrap();
 
     let args: Vec<String> = env::args().collect();
 
@@ -42,3 +46,4 @@ fn main() {
 
     std::process::exit(exit_code);
 }
+*/

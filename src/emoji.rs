@@ -11,7 +11,7 @@ pub struct Emoji;
 mod tests {
     use std::path::Path;
 
-    use crate::codepairs::RAW_PAIRS;
+    use crate::constants::RAW_PAIRS;
     use crate::pair::EmojiPair;
     use bk_tree::BKTree;
 

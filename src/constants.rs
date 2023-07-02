@@ -1,3 +1,11 @@
+pub const ABOUT_DESCRIPTION: &str = "\
+    Command-line utility for copying emojis to your clipboard.\n\n\
+    Run emojicp without arguments to run an interactive search.\n\n\
+    Run emojicp with the name of the emoji you'd like to copy to\n\
+    your clipboard. If an emoji is found with that name, it will\n\
+    be copied to your clipboard. If not, emojicp exits with status\n\
+    code 1.";
+
 const SEARCH_PROMPT: &str = "Emoji you are searching for 🔍:";
 
 // Allow dead code because this static array is

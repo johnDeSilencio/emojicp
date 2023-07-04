@@ -6,7 +6,9 @@ pub const ABOUT_DESCRIPTION: &str = "\
     be copied to your clipboard. If not, emojicp exits with status\n\
     code 1.";
 
-const SEARCH_PROMPT: &str = "Emoji you are searching for 🔍:";
+pub const SEARCH_PROMPT: &str = "Emoji you are searching for 🔍:";
+
+pub const EMOJI_TREE_FILE: &str = "static/emojitree.raw";
 
 // Allow dead code because this static array is
 // only ever used by build.rs to generate the file

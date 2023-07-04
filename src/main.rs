@@ -6,7 +6,7 @@ mod emoji;
 mod pair;
 mod types;
 
-use crate::cli::entry;
+use crate::cli::*;
 use crate::types::{Args, Carousel, EmojiCarousel, EmojiError};
 use bk_tree::BKTree;
 use clap::Parser;
@@ -18,7 +18,7 @@ fn main() -> Result<(), EmojiError> {
     // Parse the command-line input and run the program
     let args = Args::parse();
 
-    entry(&args)
+    search(&args)
 }
 
 /*

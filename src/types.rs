@@ -132,6 +132,12 @@ pub enum EmojiError {
     #[error("supplied writer cannot enter raw mode")]
     CannotEnterRawMode,
 
+    #[error("cannot open file `{filename:?}`")]
+    IoError { filename: String },
+
+    #[error("cannot deserialize BKTree from file `{filename:?}`")]
+    CannotDeserializeBKTree { filename: String },
+
     #[error("cannot find the emoji `{description:?}`")]
     InvalidEmojiName { description: String },
 }

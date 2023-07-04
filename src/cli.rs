@@ -1,8 +1,83 @@
-use crate::types::*;
+use bk_tree::BKTree;
+use clipboard_anywhere::set_clipboard;
+use termion::raw::IntoRawMode;
 
-pub fn entry(args: &Args) -> Result<(), EmojiError> {
-    println!("{:?}", args.description);
-    Ok(())
+use crate::constants::*;
+use crate::emoji::Emoji;
+use crate::pair::EmojiPair;
+use crate::{carousel, types::*};
+
+pub fn search(args: &Args) -> Result<(), EmojiError> {
+    match args.description.clone() {
+        Some(description) => {
+            // search for emoji directly
+            match search_exact(description) {
+                Ok(pair) => {
+                    set_clipboard(&pair.emoji);
+                    Ok(())
+                }
+                Err(err) => Err(err),
+            }
+        }
+        None => match search_interactive() {
+            Ok(pair) => {
+                set_clipboard(&pair.emoji);
+                Ok(())
+            }
+            Err(err) => Err(err),
+        }, // start in interactive mode
+    }
+}
+
+fn search_exact(description: String) -> Result<EmojiPair, EmojiError> {
+    // Get the raw bytes from the embedded file
+    let emoji_file = Emoji::get(EMOJI_TREE_FILE).ok_or(EmojiError::IoError {
+        filename: String::from(EMOJI_TREE_FILE),
+    })?;
+    let encoded_tree = emoji_file.data.as_ref();
+
+    // Decode the BKTree
+    let tree: BKTree<EmojiPair> =
+        bincode::deserialize(encoded_tree).map_err(|_| EmojiError::CannotDeserializeBKTree {
+            filename: String::from(EMOJI_TREE_FILE),
+        })?;
+
+    // Search the BKTree for the emoji
+    tree.find_exact(&EmojiPair {
+        description: description.clone(),
+        emoji: String::from(""), // doesn't matter for the search
+    })
+    .ok_or(EmojiError::InvalidEmojiName {
+        description: description,
+    })
+    .cloned()
+}
+
+fn search_interactive() -> Result<EmojiPair, EmojiError> {
+    let mut stdout = std::io::stdout();
+    stdout
+        .into_raw_mode()
+        .map_err(|_| EmojiError::CannotEnterRawMode)?;
+
+    /*
+    let carousel = EmojiCarousel::new(stdout);
+
+    for key in stdin.keys() {
+        match c.unwrap() {
+            Key::Ctrl('c') => {}
+            Key::Char('\n') => {}
+            Key::Backspace => {}
+            Key::Up => {}
+            Key::Down => {}
+            Key::Char(typed_char) => {}
+            _ => {} // do nothing for other keys
+        }
+    }
+    */
+    Ok(EmojiPair {
+        description: String::from(""),
+        emoji: String::from(""),
+    })
 }
 
 /*

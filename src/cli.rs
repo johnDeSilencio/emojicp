@@ -7,25 +7,24 @@ use crate::emoji::Emoji;
 use crate::pair::EmojiPair;
 use crate::{carousel, types::*};
 
-pub fn search(args: &Args) -> Result<(), EmojiError> {
+pub fn entry(args: &Args) -> Result<(), EmojiError> {
+    match search(args) {
+        Ok(pair) => set_clipboard(&pair.emoji)
+            .map_err(|_| EmojiError::CannotCopyEmojiToClipboard { emoji: pair.emoji }),
+        Err(err) => Err(err),
+    }
+}
+
+pub fn search(args: &Args) -> Result<EmojiPair, EmojiError> {
     match args.description.clone() {
         Some(description) => {
             // search for emoji directly
-            match search_exact(description) {
-                Ok(pair) => {
-                    set_clipboard(&pair.emoji);
-                    Ok(())
-                }
-                Err(err) => Err(err),
-            }
+            search_exact(description)
         }
-        None => match search_interactive() {
-            Ok(pair) => {
-                set_clipboard(&pair.emoji);
-                Ok(())
-            }
-            Err(err) => Err(err),
-        }, // start in interactive mode
+        None => {
+            // start in interactive mode
+            search_interactive()
+        }
     }
 }
 
@@ -47,9 +46,7 @@ fn search_exact(description: String) -> Result<EmojiPair, EmojiError> {
         description: description.clone(),
         emoji: String::from(""), // doesn't matter for the search
     })
-    .ok_or(EmojiError::InvalidEmojiName {
-        description: description,
-    })
+    .ok_or(EmojiError::InvalidEmojiName { description })
     .cloned()
 }
 

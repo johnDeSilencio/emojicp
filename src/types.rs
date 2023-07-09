@@ -140,4 +140,7 @@ pub enum EmojiError {
 
     #[error("cannot find the emoji `{description:?}`")]
     InvalidEmojiName { description: String },
+
+    #[error("cannot copy emoji `{emoji:?}` to the clipboard")]
+    CannotCopyEmojiToClipboard { emoji: String },
 }

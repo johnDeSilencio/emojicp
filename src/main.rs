@@ -18,7 +18,7 @@ fn main() -> Result<(), EmojiError> {
     // Parse the command-line input and run the program
     let args = Args::parse();
 
-    search(&args)
+    entry(&args)
 }
 
 /*

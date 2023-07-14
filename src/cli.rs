@@ -1,5 +1,9 @@
+use std::io::stdin;
+
 use bk_tree::BKTree;
 use clipboard_anywhere::set_clipboard;
+use termion::event::Key;
+use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
 use crate::constants::*;
@@ -56,21 +60,36 @@ fn search_interactive() -> Result<EmojiPair, EmojiError> {
         .into_raw_mode()
         .map_err(|_| EmojiError::CannotEnterRawMode)?;
 
-    /*
-    let carousel = EmojiCarousel::new(stdout);
+    let stdin = stdin();
+
+    //let carousel = EmojiCarousel::new(stdout);
 
     for key in stdin.keys() {
-        match c.unwrap() {
-            Key::Ctrl('c') => {}
-            Key::Char('\n') => {}
-            Key::Backspace => {}
-            Key::Up => {}
-            Key::Down => {}
-            Key::Char(typed_char) => {}
-            _ => {} // do nothing for other keys
+        if let Ok(key) = key {
+            match key {
+                Key::Ctrl('c') => {
+                    println!("Ctrl+c pressed!");
+                }
+                Key::Char('\n') => {
+                    println!("Enter pressed!");
+                }
+                Key::Backspace => {
+                    println!("Backspace pressed!");
+                }
+                Key::Up => {
+                    println!("Up arrow pressed!");
+                }
+                Key::Down => {
+                    println!("Down arrow pressed!");
+                }
+                Key::Char(typed_char) => {
+                    println!("char typed: {}", typed_char);
+                }
+                _ => {} // do nothing for other keys
+            }
         }
     }
-    */
+
     Ok(EmojiPair {
         description: String::from(""),
         emoji: String::from(""),

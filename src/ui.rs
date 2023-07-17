@@ -60,7 +60,29 @@ impl<'a> App<'a> {
 }
 
 pub fn ui_entry() -> Result<(), Box<dyn Error>> {
-    println!("Hello world!");
+    // Initialize terminal for interactive environment
+    enable_raw_mode()?;
+    let mut stdout = io::stdout();
+    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
+    let backend = CrosstermBackend::new(stdout);
+    let mut terminal = Terminal::new(backend)?;
+
+    // Create app and run it
+    let tick_rate = Duration::from_millis(250);
+    let app = App::new();
+    let res = run_app(&mut terminal, app, tick_rate);
+
+    // Restore terminal to normal mode
+    disable_raw_mode()?;
+    execute!(
+        terminal.backend_mut(),
+        LeaveAlternateScreen,
+        DisableMouseCapture
+    )?;
+
+    if let Err(err) = res {
+        println!("{err:?}");
+    }
 
     Ok(())
 }

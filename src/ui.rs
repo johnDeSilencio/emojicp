@@ -34,13 +34,39 @@ impl<T> EmojiSuggestions<T> {
         }
     }
 
-    fn next(&mut self) {}
+    fn next(&mut self) {
+        let i = match self.state.selected() {
+            Some(i) => {
+                if i >= self.items.len() - 1 {
+                    0
+                } else {
+                    i + 1
+                }
+            }
+            None => 0,
+        };
 
-    fn previous(&mut self) {}
+        self.state.select(Some(i));
+    }
 
-    fn unselect(&mut self) {}
+    fn previous(&mut self) {
+        let i = match self.state.selected() {
+            Some(i) => {
+                if 0 == i {
+                    self.items.len() - 1
+                } else {
+                    i - 1
+                }
+            }
+            None => 0,
+        };
 
-    fn select(&mut self) {}
+        self.state.select(Some(i));
+    }
+
+    fn unselect(&mut self) {
+        self.state.select(None);
+    }
 }
 
 struct App<'a> {
@@ -135,9 +161,9 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     // |                                                      |
     // |_Suggestions__________________________________________|
     // |                                                      |
-    // | 1. 🦀                                                |
-    // | 2. 🐍                                                |
-    // | 3. ☕                                                |
+    // | 1. crab      🦀                                      |
+    // | 2. snake     🐍                                      |
+    // | 3. coffee    ☕                                      |
     // | ...                                                  |
     // |______________________________________________________|
     let chunks = Layout::default()

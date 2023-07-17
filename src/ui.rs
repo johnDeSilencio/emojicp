@@ -107,7 +107,6 @@ impl EmojiSuggestions<EmojiPair> {
         Some(item)
     }
 
-    /*
     fn search(&mut self, item: &String) {
         // step #1: clear current suggestions
         self.items.clear();
@@ -142,15 +141,14 @@ impl EmojiSuggestions<EmojiPair> {
             .collect();
 
         // step #4: save the first 5 results
-        self.suggestions = self
-            .suggestions
+        self.items = self
+            .items
             .iter()
             .enumerate()
             .filter(|&(i, _)| i < 5)
             .map(|(_, e)| e.to_owned())
             .collect();
     }
-    */
 
     fn move_cursor_left(&mut self) {
         let cursor_moved_left = self.cursor_position.saturating_sub(1);
@@ -278,6 +276,8 @@ fn run_app<B: Backend>(
                             }
                             KeyCode::Char(new_char) => {
                                 app.items.enter_char(new_char);
+                                let user_input = &app.items.user_input.clone();
+                                app.items.search(user_input);
                             }
                             _ => {}
                         },
@@ -302,6 +302,9 @@ fn run_app<B: Backend>(
                             KeyCode::Char(new_char) => {
                                 app.items.mode = InputMode::Searching;
                                 app.items.enter_char(new_char);
+
+                                let user_input = &app.items.user_input.clone();
+                                app.items.search(user_input);
                             }
                             _ => {}
                         },
@@ -367,7 +370,10 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             .items
             .items
             .iter()
-            .map(|i| ListItem::new(Line::from(i.description.to_owned())).style(Style::default()))
+            .map(|i| {
+                let suggestion = i.description.to_owned() + i.emoji.as_str();
+                ListItem::new(Line::from(suggestion)).style(Style::default())
+            })
             .collect();
 
         let items = List::new(items)

@@ -4,6 +4,7 @@ use std::{
     time::{Duration, Instant},
 };
 
+use crate::clipboard;
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
     execute,
@@ -21,12 +22,18 @@ use ratatui::{
     text::{self, Line, Masked, Span, Text},
 };
 
-struct EmojiSuggestions<T> {
+struct EmojiSuggestions<T>
+where
+    T: std::fmt::Display,
+{
     state: ListState,
     items: Vec<T>,
 }
 
-impl<T> EmojiSuggestions<T> {
+impl<T> EmojiSuggestions<T>
+where
+    T: std::fmt::Display,
+{
     fn new() -> Self {
         EmojiSuggestions {
             state: ListState::default(),
@@ -67,12 +74,34 @@ impl<T> EmojiSuggestions<T> {
     fn unselect(&mut self) {
         self.state.select(None);
     }
+
+    fn select(&mut self) -> Option<&T> {
+        let Some(index) = self.state.selected() else {
+            return None;
+        };
+
+        let Some(item) = self.items.get(index) else {
+            return None;
+        };
+
+        println!("Found item: {}", item);
+        Some(item)
+    }
+}
+
+#[derive(Debug)]
+struct MyType<'a>(&'a str, usize);
+
+impl<'a> std::fmt::Display for MyType<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "({}, {})", self.0, self.1)
+    }
 }
 
 struct App<'a> {
     user_input: &'a str,
     user_input_changed: bool,
-    items: EmojiSuggestions<(&'a str, usize)>,
+    items: EmojiSuggestions<MyType<'a>>,
 }
 
 impl<'a> App<'a> {
@@ -117,12 +146,12 @@ fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     mut app: App,
     tick_rate: Duration,
-) -> io::Result<()> {
+) -> Result<(), Box<dyn Error>> {
     let mut last_tick = Instant::now();
 
-    app.items.items.push(("Lorem ipsum", 0));
-    app.items.items.push(("Pickle rick", 2));
-    app.items.items.push(("Please work", 153));
+    app.items.items.push(MyType("Lorem ipsum", 0));
+    app.items.items.push(MyType("Pickle rick", 2));
+    app.items.items.push(MyType("Please work", 153));
 
     loop {
         terminal.draw(|f| ui(f, &mut app))?;
@@ -138,6 +167,19 @@ fn run_app<B: Backend>(
                         KeyCode::Left => app.items.unselect(),
                         KeyCode::Down => app.items.next(),
                         KeyCode::Up => app.items.previous(),
+                        KeyCode::Enter => match app.items.select() {
+                            Some(selection) => {
+                                clipboard::set(selection.0.to_string());
+                                return Ok(());
+                            }
+                            None => {
+                                return Err(Box::new(
+                                    crate::types::EmojiError::CannotCopyEmojiToClipboard {
+                                        emoji: String::from("🦀"),
+                                    },
+                                ));
+                            }
+                        },
                         _ => {}
                     }
                 }

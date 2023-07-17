@@ -5,6 +5,9 @@ use std::{
 };
 
 use crate::clipboard;
+use crate::emoji::Emoji;
+use crate::pair::*;
+use bk_tree::BKTree;
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
     execute,
@@ -31,10 +34,12 @@ struct EmojiSuggestions<T>
 where
     T: std::fmt::Display,
 {
+    bk_tree: BKTree<EmojiPair>,
     state: ListState,
     items: Vec<T>,
     mode: InputMode,
     user_input: String,
+    user_input_changed: bool,
     cursor_position: usize,
 }
 
@@ -43,11 +48,17 @@ where
     T: std::fmt::Display,
 {
     fn new() -> Self {
+        let emoji_file = Emoji::get("static/emojitree.raw").unwrap();
+        let encoded_tree = emoji_file.data.as_ref();
+        let tree: BKTree<EmojiPair> = bincode::deserialize(encoded_tree).unwrap();
+
         EmojiSuggestions {
+            bk_tree: tree,
             state: ListState::default(),
             items: Vec::new(),
             mode: InputMode::Searching,
             user_input: String::from(""),
+            user_input_changed: true,
             cursor_position: 0,
         }
     }
@@ -154,16 +165,12 @@ impl<'a> std::fmt::Display for MyType<'a> {
 }
 
 struct App<'a> {
-    user_input: &'a str,
-    user_input_changed: bool,
     items: EmojiSuggestions<MyType<'a>>,
 }
 
 impl<'a> App<'a> {
     fn new() -> Self {
         App {
-            user_input: "",
-            user_input_changed: true,
             items: EmojiSuggestions::new(),
         }
     }
@@ -289,7 +296,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
         .split(f.size());
 
     // If the user input has changed, update the list
-    if app.user_input_changed {
+    if app.items.user_input_changed {
         // Create the input widget for searches
         let input = Paragraph::new(app.items.user_input.as_str())
             .style(match app.items.mode {

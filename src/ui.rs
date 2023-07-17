@@ -76,7 +76,7 @@ where
                     i - 1
                 }
             }
-            None => 0,
+            None => self.items.len() - 1,
         };
 
         self.state.select(Some(i));
@@ -221,10 +221,11 @@ fn run_app<B: Backend>(
                         InputMode::Searching => match key.code {
                             KeyCode::Up => {
                                 app.items.mode = InputMode::Selecting;
-                                app.items.next();
+                                app.items.previous();
                             }
                             KeyCode::Down => {
                                 app.items.mode = InputMode::Selecting;
+                                app.items.next();
                             }
                             KeyCode::Char(new_char) => {
                                 app.items.enter_char(new_char);

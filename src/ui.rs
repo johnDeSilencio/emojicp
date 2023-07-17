@@ -34,7 +34,7 @@ struct EmojiSuggestions<T>
 where
     T: std::fmt::Display,
 {
-    bk_tree: BKTree<EmojiPair>,
+    bk_tree: BKTree<T>,
     state: ListState,
     items: Vec<T>,
     mode: InputMode,
@@ -43,10 +43,7 @@ where
     cursor_position: usize,
 }
 
-impl<T> EmojiSuggestions<T>
-where
-    T: std::fmt::Display,
-{
+impl EmojiSuggestions<EmojiPair> {
     fn new() -> Self {
         let emoji_file = Emoji::get("static/emojitree.raw").unwrap();
         let encoded_tree = emoji_file.data.as_ref();
@@ -97,7 +94,7 @@ where
         self.state.select(None);
     }
 
-    fn select(&mut self) -> Option<&T> {
+    fn select(&mut self) -> Option<&EmojiPair> {
         let Some(index) = self.state.selected() else {
             return None;
         };
@@ -109,6 +106,51 @@ where
         println!("Found item: {}", item);
         Some(item)
     }
+
+    /*
+    fn search(&mut self, item: &String) {
+        // step #1: clear current suggestions
+        self.items.clear();
+
+        // step #2: perform search on tree
+        let tolerance = 5;
+        let key = EmojiPair {
+            description: item.clone(),
+            emoji: "".to_owned(), // doesn't matter for search
+        };
+
+        let search_results = self.bk_tree.find(&key, tolerance);
+
+        let mut ordered_suggestions: Vec<(u32, EmojiPair)> = vec![];
+        for result in search_results {
+            let suggestion: EmojiPair = result.1.to_owned();
+            ordered_suggestions.push((result.0, suggestion));
+        }
+
+        ordered_suggestions.sort_by_key(|k| k.0);
+        let mut new_suggestions: Vec<EmojiPair> = vec![];
+        for suggestion in ordered_suggestions {
+            new_suggestions.push(suggestion.1);
+        }
+
+        // step #3: filter out anything that doesn't almost match
+        self.items = new_suggestions
+            .iter()
+            .enumerate()
+            .filter(|&(_, v)| v.description.starts_with(item.as_str()))
+            .map(|(_, e)| e.to_owned())
+            .collect();
+
+        // step #4: save the first 5 results
+        self.suggestions = self
+            .suggestions
+            .iter()
+            .enumerate()
+            .filter(|&(i, _)| i < 5)
+            .map(|(_, e)| e.to_owned())
+            .collect();
+    }
+    */
 
     fn move_cursor_left(&mut self) {
         let cursor_moved_left = self.cursor_position.saturating_sub(1);
@@ -155,20 +197,11 @@ where
     }
 }
 
-#[derive(Debug)]
-struct MyType<'a>(&'a str, usize);
-
-impl<'a> std::fmt::Display for MyType<'a> {
-    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
-        write!(f, "({}, {})", self.0, self.1)
-    }
+struct App {
+    items: EmojiSuggestions<EmojiPair>,
 }
 
-struct App<'a> {
-    items: EmojiSuggestions<MyType<'a>>,
-}
-
-impl<'a> App<'a> {
+impl App {
     fn new() -> Self {
         App {
             items: EmojiSuggestions::new(),
@@ -211,9 +244,18 @@ fn run_app<B: Backend>(
 ) -> Result<(), Box<dyn Error>> {
     let mut last_tick = Instant::now();
 
-    app.items.items.push(MyType("Lorem ipsum", 0));
-    app.items.items.push(MyType("Pickle rick", 2));
-    app.items.items.push(MyType("Please work", 153));
+    app.items.items.push(EmojiPair {
+        description: String::from("crab"),
+        emoji: String::from("🦀"),
+    });
+    app.items.items.push(EmojiPair {
+        description: String::from("snake"),
+        emoji: String::from("🐍"),
+    });
+    app.items.items.push(EmojiPair {
+        description: String::from("coffee"),
+        emoji: String::from("☕"),
+    });
 
     loop {
         terminal.draw(|f| ui(f, &mut app))?;
@@ -246,7 +288,7 @@ fn run_app<B: Backend>(
                             KeyCode::Up => app.items.previous(),
                             KeyCode::Enter => match app.items.select() {
                                 Some(selection) => {
-                                    clipboard::set(selection.0.to_string());
+                                    clipboard::set(selection.emoji.to_owned());
                                     return Ok(());
                                 }
                                 None => {
@@ -325,7 +367,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             .items
             .items
             .iter()
-            .map(|i| ListItem::new(Line::from(i.0)).style(Style::default()))
+            .map(|i| ListItem::new(Line::from(i.description.to_owned())).style(Style::default()))
             .collect();
 
         let items = List::new(items)

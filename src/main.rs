@@ -9,17 +9,21 @@ mod ui;
 
 use crate::cli::*;
 use crate::types::{Args, Carousel, EmojiCarousel, EmojiError};
+use crate::ui::*;
 use bk_tree::BKTree;
 use clap::Parser;
 use emoji::Emoji;
 use pair::EmojiPair;
 use std::env;
+use std::error::Error;
 
-fn main() -> Result<(), EmojiError> {
+fn main() -> Result<(), Box<dyn Error>> {
     // Parse the command-line input and run the program
     let args = Args::parse();
 
-    entry(&args)
+    ui_entry()
+
+    //entry(&args)
 }
 
 /*

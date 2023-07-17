@@ -59,6 +59,12 @@ impl<'a> App<'a> {
     }
 }
 
+pub fn ui_entry() -> Result<(), Box<dyn Error>> {
+    println!("Hello world!");
+
+    Ok(())
+}
+
 fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     mut app: App,

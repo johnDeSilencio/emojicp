@@ -251,6 +251,14 @@ fn run_app<B: Backend>(
         emoji: String::from("🐍"),
     });
     app.items.items.push(EmojiPair {
+        description: String::from("monkey"),
+        emoji: String::from("🐒"),
+    });
+    app.items.items.push(EmojiPair {
+        description: String::from("eyeglasses"),
+        emoji: String::from("👓"),
+    });
+    app.items.items.push(EmojiPair {
         description: String::from("coffee"),
         emoji: String::from("☕"),
     });
@@ -283,6 +291,15 @@ fn run_app<B: Backend>(
                                     app.items.items.clear();
                                 }
                             }
+                            KeyCode::Char('c') => {
+                                if key.modifiers.contains(event::KeyModifiers::CONTROL) {
+                                    return Ok(());
+                                } else {
+                                    app.items.enter_char('c');
+                                    let user_input = &app.items.user_input.clone();
+                                    app.items.search(user_input);
+                                }
+                            }
                             KeyCode::Char(new_char) => {
                                 app.items.enter_char(new_char);
                                 let user_input = &app.items.user_input.clone();
@@ -291,7 +308,6 @@ fn run_app<B: Backend>(
                             _ => {}
                         },
                         InputMode::Selecting => match key.code {
-                            KeyCode::Char('q') => return Ok(()),
                             KeyCode::Left => app.items.unselect(),
                             KeyCode::Down => app.items.next(),
                             KeyCode::Up => app.items.previous(),
@@ -316,6 +332,16 @@ fn run_app<B: Backend>(
 
                                 if user_input.is_empty() {
                                     app.items.items.clear();
+                                }
+                            }
+                            KeyCode::Char('c') => {
+                                if key.modifiers.contains(event::KeyModifiers::CONTROL) {
+                                    return Ok(());
+                                } else {
+                                    app.items.enter_char('c');
+                                    let user_input = &app.items.user_input.clone();
+                                    app.items.search(user_input);
+                                    app.items.mode = InputMode::Searching;
                                 }
                             }
                             KeyCode::Char(new_char) => {
@@ -384,6 +410,13 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             InputMode::Selecting => {}
         }
 
+        let msg = match app.items.mode {
+            InputMode::Searching => String::from("⬆️  ⬇️  [Up / Down Arrows]: Select emoji"),
+            InputMode::Selecting => {
+                String::from("↩️   [Enter / Return Key]: Copy emoji to clipboard")
+            }
+        };
+
         // Create the list widget that will be used to display suggestions
         let items: Vec<ListItem> = app
             .items
@@ -399,9 +432,13 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .title("⬆️  ⬇️  Select emoji ↩ Copy emoji to clipboard ")
+                    .title(msg.as_str())
                     .title_on_bottom(),
             )
+            .style(match app.items.mode {
+                InputMode::Selecting => Style::default().fg(Color::Yellow),
+                InputMode::Searching => Style::default(),
+            })
             .highlight_style(Style::default().add_modifier(Modifier::BOLD))
             .highlight_symbol("> ");
 

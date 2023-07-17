@@ -112,7 +112,7 @@ impl EmojiSuggestions<EmojiPair> {
         self.items.clear();
 
         // step #2: perform search on tree
-        let tolerance = 5;
+        let tolerance = 10;
         let key = EmojiPair {
             description: item.clone(),
             emoji: "".to_owned(), // doesn't matter for search

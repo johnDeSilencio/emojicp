@@ -22,12 +22,20 @@ use ratatui::{
     text::{self, Line, Masked, Span, Text},
 };
 
+enum InputMode {
+    Searching,
+    Selecting,
+}
+
 struct EmojiSuggestions<T>
 where
     T: std::fmt::Display,
 {
     state: ListState,
     items: Vec<T>,
+    mode: InputMode,
+    user_input: String,
+    cursor_position: usize,
 }
 
 impl<T> EmojiSuggestions<T>
@@ -38,6 +46,9 @@ where
         EmojiSuggestions {
             state: ListState::default(),
             items: Vec::new(),
+            mode: InputMode::Searching,
+            user_input: String::from(""),
+            cursor_position: 0,
         }
     }
 
@@ -86,6 +97,50 @@ where
 
         println!("Found item: {}", item);
         Some(item)
+    }
+
+    fn move_cursor_left(&mut self) {
+        let cursor_moved_left = self.cursor_position.saturating_sub(1);
+        self.cursor_position = self.clamp_cursor(cursor_moved_left);
+    }
+
+    fn move_cursor_right(&mut self) {
+        let cursor_moved_right = self.cursor_position.saturating_add(1);
+        self.cursor_position = self.clamp_cursor(cursor_moved_right);
+    }
+
+    fn enter_char(&mut self, new_char: char) {
+        self.user_input.insert(self.cursor_position, new_char);
+        self.move_cursor_right();
+    }
+
+    fn delete_char(&mut self) {
+        let is_not_cursor_leftmost = self.cursor_position != 0;
+        if is_not_cursor_leftmost {
+            // Method "remove" is not used on the saved text for deleting the selected char.
+            // Reason: Using remove on String works on bytes instead of the chars.
+            // Using remove would require special care because of char boundaries.
+            let current_index = self.cursor_position;
+            let from_left_to_current_index = current_index - 1;
+
+            // Getting all characters before the selected character
+            let before_char_to_delete = self.user_input.chars().take(from_left_to_current_index);
+            // Getting all characters after the selected character
+            let after_char_to_delete = self.user_input.chars().skip(current_index);
+
+            // Put all characters together except the selected one.
+            // By leaving the selected one out, it is forgotten and therefore deleted.
+            self.user_input = before_char_to_delete.chain(after_char_to_delete).collect();
+            self.move_cursor_left();
+        }
+    }
+
+    fn clamp_cursor(&self, new_cursor_pos: usize) -> usize {
+        new_cursor_pos.clamp(0, self.user_input.len())
+    }
+
+    fn reset_cursor(&mut self) {
+        self.cursor_position = 0;
     }
 }
 
@@ -162,25 +217,44 @@ fn run_app<B: Backend>(
         if crossterm::event::poll(timeout)? {
             if let Event::Key(key) = event::read()? {
                 if key.kind == KeyEventKind::Press {
-                    match key.code {
-                        KeyCode::Char('q') => return Ok(()),
-                        KeyCode::Left => app.items.unselect(),
-                        KeyCode::Down => app.items.next(),
-                        KeyCode::Up => app.items.previous(),
-                        KeyCode::Enter => match app.items.select() {
-                            Some(selection) => {
-                                clipboard::set(selection.0.to_string());
-                                return Ok(());
+                    match app.items.mode {
+                        InputMode::Searching => match key.code {
+                            KeyCode::Up => {
+                                app.items.mode = InputMode::Selecting;
+                                app.items.next();
                             }
-                            None => {
-                                return Err(Box::new(
-                                    crate::types::EmojiError::CannotCopyEmojiToClipboard {
-                                        emoji: String::from("🦀"),
-                                    },
-                                ));
+                            KeyCode::Down => {
+                                app.items.mode = InputMode::Selecting;
                             }
+                            KeyCode::Char(new_char) => {
+                                app.items.enter_char(new_char);
+                            }
+                            _ => {}
                         },
-                        _ => {}
+                        InputMode::Selecting => match key.code {
+                            KeyCode::Char('q') => return Ok(()),
+                            KeyCode::Left => app.items.unselect(),
+                            KeyCode::Down => app.items.next(),
+                            KeyCode::Up => app.items.previous(),
+                            KeyCode::Enter => match app.items.select() {
+                                Some(selection) => {
+                                    clipboard::set(selection.0.to_string());
+                                    return Ok(());
+                                }
+                                None => {
+                                    return Err(Box::new(
+                                        crate::types::EmojiError::CannotCopyEmojiToClipboard {
+                                            emoji: String::from("🦀"),
+                                        },
+                                    ));
+                                }
+                            },
+                            KeyCode::Char(new_char) => {
+                                app.items.mode = InputMode::Searching;
+                                app.items.enter_char(new_char);
+                            }
+                            _ => {}
+                        },
                     }
                 }
             }
@@ -216,7 +290,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     // If the user input has changed, update the list
     if app.user_input_changed {
         // Create the input widget for searches
-        let input = Paragraph::new(app.user_input).block(
+        let input = Paragraph::new(app.items.user_input.as_str()).block(
             Block::default()
                 .borders(Borders::ALL)
                 .title(crate::constants::SEARCH_PROMPT),
@@ -224,6 +298,14 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
 
         // We can now render the search bar
         f.render_widget(input, chunks[0]);
+
+        match app.items.mode {
+            InputMode::Searching => f.set_cursor(
+                chunks[1].x + app.items.cursor_position as u16 + 1,
+                chunks[0].y + 1,
+            ),
+            InputMode::Selecting => {}
+        }
 
         // Create the list widget that will be used to display suggestions
         let items: Vec<ListItem> = app

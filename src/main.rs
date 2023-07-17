@@ -5,6 +5,7 @@ mod constants;
 mod emoji;
 mod pair;
 mod types;
+mod ui;
 
 use crate::cli::*;
 use crate::types::{Args, Carousel, EmojiCarousel, EmojiError};

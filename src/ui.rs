@@ -137,11 +137,23 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     // |______________________________________________________|
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .constraints([Constraint::Percentage(80), Constraint::Percentage(20)].as_ref())
+        .margin(2)
+        .constraints([Constraint::Length(3), Constraint::Min(3)].as_ref())
         .split(f.size());
 
     // If the user input has changed, update the list
     if app.user_input_changed {
+        // Create the input widget for searches
+        let input = Paragraph::new(app.user_input).block(
+            Block::default()
+                .borders(Borders::ALL)
+                .title(crate::constants::SEARCH_PROMPT),
+        );
+
+        // We can now render the search bar
+        f.render_widget(input, chunks[0]);
+
+        // Create the list widget that will be used to display suggestions
         let items: Vec<ListItem> = app
             .items
             .items
@@ -161,6 +173,6 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             .highlight_symbol("> ");
 
         // We can now render the emoji suggestions
-        f.render_stateful_widget(items, chunks[0], &mut app.items.state);
+        f.render_stateful_widget(items, chunks[1], &mut app.items.state);
     }
 }

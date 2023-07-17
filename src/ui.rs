@@ -278,6 +278,10 @@ fn run_app<B: Backend>(
                                 app.items.delete_char();
                                 let user_input = &app.items.user_input.clone();
                                 app.items.search(user_input);
+
+                                if user_input.is_empty() {
+                                    app.items.items.clear();
+                                }
                             }
                             KeyCode::Char(new_char) => {
                                 app.items.enter_char(new_char);
@@ -309,6 +313,10 @@ fn run_app<B: Backend>(
                                 let user_input = &app.items.user_input.clone();
                                 app.items.search(user_input);
                                 app.items.mode = InputMode::Searching;
+
+                                if user_input.is_empty() {
+                                    app.items.items.clear();
+                                }
                             }
                             KeyCode::Char(new_char) => {
                                 app.items.mode = InputMode::Searching;
@@ -388,7 +396,12 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             .collect();
 
         let items = List::new(items)
-            .block(Block::default().borders(Borders::ALL).title("Suggestions"))
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title("Suggestions")
+                    .title_on_bottom(),
+            )
             .highlight_style(Style::default().add_modifier(Modifier::BOLD))
             .highlight_symbol("> ");
 

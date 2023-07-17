@@ -94,6 +94,10 @@ fn run_app<B: Backend>(
 ) -> io::Result<()> {
     let mut last_tick = Instant::now();
 
+    app.items.items.push(("Lorem ipsum", 0));
+    app.items.items.push(("Pickle rick", 2));
+    app.items.items.push(("Please work", 153));
+
     loop {
         terminal.draw(|f| ui(f, &mut app))?;
 
@@ -125,10 +129,11 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     // the bottom chunk for displaying suggestions that the user
     // can choose from:
     //
-    // ___Input________________________________________________
+    // __Input_________________________________________________
     // |                                                      |
     // | ferris                                               |
-    // |______________________________________________________|
+    // |                                                      |
+    // |_Suggestions__________________________________________|
     // |                                                      |
     // | 1. 🦀                                                |
     // | 2. 🐍                                                |
@@ -137,7 +142,6 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     // |______________________________________________________|
     let chunks = Layout::default()
         .direction(Direction::Vertical)
-        .margin(2)
         .constraints([Constraint::Length(3), Constraint::Min(3)].as_ref())
         .split(f.size());
 
@@ -158,13 +162,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             .items
             .items
             .iter()
-            .map(|i| {
-                let mut lines = vec![Line::from(i.0)];
-                for _ in 0..i.1 {
-                    lines.push("Lorem ipsum dolor sit amet, consectetur adipiscing elit.".into());
-                }
-                ListItem::new(lines).style(Style::default())
-            })
+            .map(|i| ListItem::new(Line::from(i.0)).style(Style::default()))
             .collect();
 
         let items = List::new(items)

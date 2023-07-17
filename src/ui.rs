@@ -8,6 +8,7 @@ use crate::clipboard;
 use crate::emoji::Emoji;
 use crate::pair::*;
 use bk_tree::BKTree;
+use clipboard_anywhere::set_clipboard;
 use crossterm::{
     event::{self, DisableMouseCapture, EnableMouseCapture, Event, KeyCode, KeyEventKind},
     execute,
@@ -312,17 +313,15 @@ fn run_app<B: Backend>(
                             KeyCode::Down => app.items.next(),
                             KeyCode::Up => app.items.previous(),
                             KeyCode::Enter => match app.items.select() {
-                                Some(selection) => {
-                                    clipboard::set(selection.emoji.to_owned());
-                                    return Ok(());
-                                }
-                                None => {
-                                    return Err(Box::new(
-                                        crate::types::EmojiError::CannotCopyEmojiToClipboard {
-                                            emoji: String::from("🦀"),
-                                        },
-                                    ));
-                                }
+                                Some(selection) => set_clipboard(selection.emoji.as_str())
+                                    .map_err(|_| {
+                                        Box::new(
+                                            crate::types::EmojiError::CannotCopyEmojiToClipboard {
+                                                emoji: selection.emoji.clone(),
+                                            },
+                                        )
+                                    })?,
+                                _ => {} // If nothing is selected, don't do anything
                             },
                             KeyCode::Backspace => {
                                 app.items.delete_char();

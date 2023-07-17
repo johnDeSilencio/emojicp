@@ -79,12 +79,12 @@ impl EmojiSuggestions<EmojiPair> {
         let i = match self.state.selected() {
             Some(i) => {
                 if 0 == i {
-                    self.items.len() - 1
+                    self.items.len().saturating_sub(1)
                 } else {
                     i - 1
                 }
             }
-            None => self.items.len() - 1,
+            None => self.items.len().saturating_sub(1),
         };
 
         self.state.select(Some(i));

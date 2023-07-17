@@ -63,7 +63,7 @@ impl EmojiSuggestions<EmojiPair> {
     fn next(&mut self) {
         let i = match self.state.selected() {
             Some(i) => {
-                if i >= self.items.len() - 1 {
+                if i + 1 >= self.items.len() {
                     0
                 } else {
                     i + 1
@@ -390,7 +390,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             .items
             .iter()
             .map(|i| {
-                let suggestion = i.description.to_owned() + i.emoji.as_str();
+                let suggestion = format!("{}", i);
                 ListItem::new(Line::from(suggestion)).style(Style::default())
             })
             .collect();
@@ -399,7 +399,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
             .block(
                 Block::default()
                     .borders(Borders::ALL)
-                    .title("Suggestions")
+                    .title("⬆️  ⬇️  Select emoji ↩ Copy emoji to clipboard ")
                     .title_on_bottom(),
             )
             .highlight_style(Style::default().add_modifier(Modifier::BOLD))

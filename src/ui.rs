@@ -274,6 +274,11 @@ fn run_app<B: Backend>(
                                 app.items.mode = InputMode::Selecting;
                                 app.items.next();
                             }
+                            KeyCode::Backspace => {
+                                app.items.delete_char();
+                                let user_input = &app.items.user_input.clone();
+                                app.items.search(user_input);
+                            }
                             KeyCode::Char(new_char) => {
                                 app.items.enter_char(new_char);
                                 let user_input = &app.items.user_input.clone();
@@ -299,6 +304,12 @@ fn run_app<B: Backend>(
                                     ));
                                 }
                             },
+                            KeyCode::Backspace => {
+                                app.items.delete_char();
+                                let user_input = &app.items.user_input.clone();
+                                app.items.search(user_input);
+                                app.items.mode = InputMode::Searching;
+                            }
                             KeyCode::Char(new_char) => {
                                 app.items.mode = InputMode::Searching;
                                 app.items.enter_char(new_char);

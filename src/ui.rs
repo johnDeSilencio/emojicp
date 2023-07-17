@@ -313,14 +313,17 @@ fn run_app<B: Backend>(
                             KeyCode::Down => app.items.next(),
                             KeyCode::Up => app.items.previous(),
                             KeyCode::Enter => match app.items.select() {
-                                Some(selection) => set_clipboard(selection.emoji.as_str())
-                                    .map_err(|_| {
+                                Some(selection) => {
+                                    set_clipboard(selection.emoji.as_str()).map_err(|_| {
                                         Box::new(
                                             crate::types::EmojiError::CannotCopyEmojiToClipboard {
                                                 emoji: selection.emoji.clone(),
                                             },
                                         )
-                                    })?,
+                                    })?;
+
+                                    return Ok(());
+                                }
                                 _ => {} // If nothing is selected, don't do anything
                             },
                             KeyCode::Backspace => {

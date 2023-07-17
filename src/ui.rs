@@ -290,11 +290,16 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     // If the user input has changed, update the list
     if app.user_input_changed {
         // Create the input widget for searches
-        let input = Paragraph::new(app.items.user_input.as_str()).block(
-            Block::default()
-                .borders(Borders::ALL)
-                .title(crate::constants::SEARCH_PROMPT),
-        );
+        let input = Paragraph::new(app.items.user_input.as_str())
+            .style(match app.items.mode {
+                InputMode::Searching => Style::default().fg(Color::Yellow),
+                InputMode::Selecting => Style::default(),
+            })
+            .block(
+                Block::default()
+                    .borders(Borders::ALL)
+                    .title(crate::constants::SEARCH_PROMPT),
+            );
 
         // We can now render the search bar
         f.render_widget(input, chunks[0]);

@@ -1,3 +1,4 @@
+use std::error::Error;
 use std::io::stdin;
 
 use bk_tree::BKTree;
@@ -9,17 +10,18 @@ use termion::raw::IntoRawMode;
 use crate::constants::*;
 use crate::emoji::Emoji;
 use crate::pair::EmojiPair;
+use crate::ui::search_interactive;
 use crate::{carousel, types::*};
 
-pub fn entry(args: &Args) -> Result<(), EmojiError> {
+pub fn entry(args: &Args) -> Result<(), Box<dyn Error>> {
     match search(args) {
-        Ok(pair) => set_clipboard(&pair.emoji)
-            .map_err(|_| EmojiError::CannotCopyEmojiToClipboard { emoji: pair.emoji }),
+        Ok(pair) => Ok(set_clipboard(&pair.emoji)
+            .map_err(|_| Box::new(EmojiError::CannotCopyEmojiToClipboard { emoji: pair.emoji }))?),
         Err(err) => Err(err),
     }
 }
 
-pub fn search(args: &Args) -> Result<EmojiPair, EmojiError> {
+pub fn search(args: &Args) -> Result<EmojiPair, Box<dyn Error>> {
     match args.description.clone() {
         Some(description) => {
             // search for emoji directly
@@ -27,73 +29,33 @@ pub fn search(args: &Args) -> Result<EmojiPair, EmojiError> {
         }
         None => {
             // start in interactive mode
-            search_interactive()
+            Ok(search_interactive()?)
         }
     }
 }
 
-fn search_exact(description: String) -> Result<EmojiPair, EmojiError> {
+fn search_exact(description: String) -> Result<EmojiPair, Box<dyn Error>> {
     // Get the raw bytes from the embedded file
-    let emoji_file = Emoji::get(EMOJI_TREE_FILE).ok_or(EmojiError::IoError {
+    let emoji_file = Emoji::get(EMOJI_TREE_FILE).ok_or(Box::new(EmojiError::IoError {
         filename: String::from(EMOJI_TREE_FILE),
-    })?;
+    }))?;
     let encoded_tree = emoji_file.data.as_ref();
 
     // Decode the BKTree
-    let tree: BKTree<EmojiPair> =
-        bincode::deserialize(encoded_tree).map_err(|_| EmojiError::CannotDeserializeBKTree {
+    let tree: BKTree<EmojiPair> = bincode::deserialize(encoded_tree).map_err(|_| {
+        Box::new(EmojiError::CannotDeserializeBKTree {
             filename: String::from(EMOJI_TREE_FILE),
-        })?;
+        })
+    })?;
 
     // Search the BKTree for the emoji
-    tree.find_exact(&EmojiPair {
-        description: description.clone(),
-        emoji: String::from(""), // doesn't matter for the search
-    })
-    .ok_or(EmojiError::InvalidEmojiName { description })
-    .cloned()
-}
-
-fn search_interactive() -> Result<EmojiPair, EmojiError> {
-    let mut stdout = std::io::stdout();
-    stdout
-        .into_raw_mode()
-        .map_err(|_| EmojiError::CannotEnterRawMode)?;
-
-    let stdin = stdin();
-
-    //let carousel = EmojiCarousel::new(stdout);
-
-    for key in stdin.keys() {
-        if let Ok(key) = key {
-            match key {
-                Key::Ctrl('c') => {
-                    println!("Ctrl+c pressed!");
-                }
-                Key::Char('\n') => {
-                    println!("Enter pressed!");
-                }
-                Key::Backspace => {
-                    println!("Backspace pressed!");
-                }
-                Key::Up => {
-                    println!("Up arrow pressed!");
-                }
-                Key::Down => {
-                    println!("Down arrow pressed!");
-                }
-                Key::Char(typed_char) => {
-                    println!("char typed: {}", typed_char);
-                }
-                _ => {} // do nothing for other keys
-            }
-        }
-    }
-
-    Ok(EmojiPair {
-        description: String::from(""),
-        emoji: String::from(""),
-    })
+    Ok(tree
+        .find_exact(&EmojiPair {
+            description: description.clone(),
+            emoji: String::from(""), // doesn't matter for the search
+        })
+        .ok_or(Box::new(EmojiError::InvalidEmojiName { description }))
+        .cloned()?)
 }
 
 /*

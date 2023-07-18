@@ -7,6 +7,7 @@ use std::{
 use crate::clipboard;
 use crate::emoji::Emoji;
 use crate::pair::*;
+use crate::types::*;
 use bk_tree::BKTree;
 use clipboard_anywhere::set_clipboard;
 use crossterm::{
@@ -208,7 +209,7 @@ impl App {
     }
 }
 
-pub fn ui_entry() -> Result<(), Box<dyn Error>> {
+pub fn search_interactive() -> Result<EmojiPair, Box<dyn Error>> {
     // Initialize terminal for interactive environment
     enable_raw_mode()?;
     let mut stdout = io::stdout();
@@ -229,18 +230,14 @@ pub fn ui_entry() -> Result<(), Box<dyn Error>> {
         DisableMouseCapture
     )?;
 
-    if let Err(err) = res {
-        println!("{err:?}");
-    }
-
-    Ok(())
+    res
 }
 
 fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     mut app: App,
     tick_rate: Duration,
-) -> Result<(), Box<dyn Error>> {
+) -> Result<EmojiPair, Box<dyn Error>> {
     let mut last_tick = Instant::now();
 
     app.items.items.push(EmojiPair {
@@ -294,7 +291,7 @@ fn run_app<B: Backend>(
                             }
                             KeyCode::Char('c') => {
                                 if key.modifiers.contains(event::KeyModifiers::CONTROL) {
-                                    return Ok(());
+                                    return Err(Box::new(EmojiError::UserCanceledProgram));
                                 } else {
                                     app.items.enter_char('c');
                                     let user_input = &app.items.user_input.clone();
@@ -314,15 +311,7 @@ fn run_app<B: Backend>(
                             KeyCode::Up => app.items.previous(),
                             KeyCode::Enter => match app.items.select() {
                                 Some(selection) => {
-                                    set_clipboard(selection.emoji.as_str()).map_err(|_| {
-                                        Box::new(
-                                            crate::types::EmojiError::CannotCopyEmojiToClipboard {
-                                                emoji: selection.emoji.clone(),
-                                            },
-                                        )
-                                    })?;
-
-                                    return Ok(());
+                                    return Ok(selection.clone());
                                 }
                                 _ => {} // If nothing is selected, don't do anything
                             },
@@ -338,7 +327,7 @@ fn run_app<B: Backend>(
                             }
                             KeyCode::Char('c') => {
                                 if key.modifiers.contains(event::KeyModifiers::CONTROL) {
-                                    return Ok(());
+                                    return Err(Box::new(EmojiError::UserCanceledProgram));
                                 } else {
                                     app.items.enter_char('c');
                                     let user_input = &app.items.user_input.clone();

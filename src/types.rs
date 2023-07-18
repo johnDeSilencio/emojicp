@@ -143,4 +143,7 @@ pub enum EmojiError {
 
     #[error("cannot copy emoji `{emoji:?}` to the clipboard")]
     CannotCopyEmojiToClipboard { emoji: String },
+
+    #[error("user canceled program; nothing copied to clipboard")]
+    UserCanceledProgram,
 }

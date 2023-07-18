@@ -21,9 +21,7 @@ fn main() -> Result<(), Box<dyn Error>> {
     // Parse the command-line input and run the program
     let args = Args::parse();
 
-    ui_entry()
-
-    //entry(&args)
+    Ok(entry(&args)?)
 }
 
 /*

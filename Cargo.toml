@@ -45,4 +45,4 @@ criterion = { version = "0.5", features = ["html_reports"] }
 
 [[bench]]
 harness = false
-name = "search_direct"
+name = "search_exact"

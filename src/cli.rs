@@ -10,7 +10,7 @@ use termion::raw::IntoRawMode;
 use emojicp::constants::*;
 use emojicp::emoji::Emoji;
 use emojicp::pair::EmojiPair;
-use emojicp::ui::search_interactive;
+use emojicp::search::{search_exact, search_interactive};
 use emojicp::{carousel, types::*};
 
 pub fn entry(args: &Args) -> Result<(), Box<dyn Error>> {
@@ -32,30 +32,6 @@ pub fn search(args: &Args) -> Result<EmojiPair, Box<dyn Error>> {
             Ok(search_interactive()?)
         }
     }
-}
-
-fn search_exact(description: String) -> Result<EmojiPair, Box<dyn Error>> {
-    // Get the raw bytes from the embedded file
-    let emoji_file = Emoji::get(EMOJI_TREE_FILE).ok_or(Box::new(EmojiError::IoError {
-        filename: String::from(EMOJI_TREE_FILE),
-    }))?;
-    let encoded_tree = emoji_file.data.as_ref();
-
-    // Decode the BKTree
-    let tree: BKTree<EmojiPair> = bincode::deserialize(encoded_tree).map_err(|_| {
-        Box::new(EmojiError::CannotDeserializeBKTree {
-            filename: String::from(EMOJI_TREE_FILE),
-        })
-    })?;
-
-    // Search the BKTree for the emoji
-    Ok(tree
-        .find_exact(&EmojiPair {
-            description: description.clone(),
-            emoji: String::from(""), // doesn't matter for the search
-        })
-        .ok_or(Box::new(EmojiError::InvalidEmojiName { description }))
-        .cloned()?)
 }
 
 /*

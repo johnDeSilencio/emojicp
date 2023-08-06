@@ -197,43 +197,19 @@ impl EmojiSuggestions<EmojiPair> {
     }
 }
 
-struct App {
+pub struct App {
     items: EmojiSuggestions<EmojiPair>,
 }
 
 impl App {
-    fn new() -> Self {
+    pub fn new() -> Self {
         App {
             items: EmojiSuggestions::new(),
         }
     }
 }
 
-pub fn search_interactive() -> Result<EmojiPair, Box<dyn Error>> {
-    // Initialize terminal for interactive environment
-    enable_raw_mode()?;
-    let mut stdout = io::stdout();
-    execute!(stdout, EnterAlternateScreen, EnableMouseCapture)?;
-    let backend = CrosstermBackend::new(stdout);
-    let mut terminal = Terminal::new(backend)?;
-
-    // Create app and run it
-    let tick_rate = Duration::from_millis(250);
-    let app = App::new();
-    let res = run_app(&mut terminal, app, tick_rate);
-
-    // Restore terminal to normal mode
-    disable_raw_mode()?;
-    execute!(
-        terminal.backend_mut(),
-        LeaveAlternateScreen,
-        DisableMouseCapture
-    )?;
-
-    res
-}
-
-fn run_app<B: Backend>(
+pub fn run_app<B: Backend>(
     terminal: &mut Terminal<B>,
     mut app: App,
     tick_rate: Duration,

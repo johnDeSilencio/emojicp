@@ -7,11 +7,11 @@ use termion::event::Key;
 use termion::input::TermRead;
 use termion::raw::IntoRawMode;
 
-use crate::constants::*;
-use crate::emoji::Emoji;
-use crate::pair::EmojiPair;
-use crate::ui::search_interactive;
-use crate::{carousel, types::*};
+use emojicp::constants::*;
+use emojicp::emoji::Emoji;
+use emojicp::pair::EmojiPair;
+use emojicp::ui::search_interactive;
+use emojicp::{carousel, types::*};
 
 pub fn entry(args: &Args) -> Result<(), Box<dyn Error>> {
     match search(args) {

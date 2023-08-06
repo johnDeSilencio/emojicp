@@ -65,7 +65,7 @@ pub trait Carousel {
 
 // Where the cursor is in the terminal
 #[derive(Debug, Clone, Copy, PartialEq)]
-struct Coordinates {
+pub struct Coordinates {
     pub x: usize,
     pub y: usize,
 }

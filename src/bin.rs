@@ -1,19 +1,13 @@
-mod carousel;
 mod cli;
-mod clipboard;
-mod constants;
-mod emoji;
-mod pair;
-mod types;
-mod ui;
+use emojicp;
 
-use crate::cli::*;
-use crate::types::{Args, Carousel, EmojiCarousel, EmojiError};
-use crate::ui::*;
+use crate::cli::entry;
 use bk_tree::BKTree;
 use clap::Parser;
-use emoji::Emoji;
-use pair::EmojiPair;
+use emojicp::emoji::Emoji;
+use emojicp::pair::EmojiPair;
+use emojicp::types::{Args, Carousel, EmojiCarousel, EmojiError};
+use emojicp::ui::*;
 use std::env;
 use std::error::Error;
 

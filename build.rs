@@ -1,7 +1,7 @@
-#[path = "src/pair.rs"]
+#[path = "src/lib/pair.rs"]
 mod pair;
 
-#[path = "src/constants.rs"]
+#[path = "src/lib/constants.rs"]
 mod constants;
 
 use std::path::Path;

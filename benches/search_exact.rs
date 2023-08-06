@@ -10,7 +10,7 @@ use rand::{seq::SliceRandom, thread_rng};
 // search_exact_benchmark creates a vector of all emojis
 // names, shuffles those names, iterates through that list,
 // and searches for the corresponding emoji. This benchmark
-// takes ~2 minutes to run locally
+// takes ~2-3 minutes to run locally
 fn search_exact_benchmark(c: &mut Criterion) {
     let mut emoji_names: Vec<&str> = RAW_PAIRS.iter().map(|pair| pair.0).collect();
     emoji_names.shuffle(&mut thread_rng());

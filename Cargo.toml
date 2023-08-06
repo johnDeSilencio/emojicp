@@ -1,17 +1,15 @@
 [package]
-name = "emojicp"
-version = "0.3.0"
-edition = "2021"
-description = "A command-line tool to search for emojis by name"
-keywords = ["emoji", "copy"]
-categories = ["command-line-utilities"]
 authors = ["Nicholas R. Smith"]
-license = "GPL-3.0-or-later"
-homepage = "https://github.com/johnDeSilencio/emojicp"
+categories = ["command-line-utilities"]
+description = "A command-line tool to search for emojis by name"
 documentation = "https://docs.rs/emojicp"
+edition = "2021"
+homepage = "https://github.com/johnDeSilencio/emojicp"
+keywords = ["emoji", "copy"]
+license = "GPL-3.0-or-later"
+name = "emojicp"
 readme = "README.md"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+version = "0.3.0"
 
 [[bin]]
 name = "emojicp"
@@ -22,29 +20,29 @@ name = "emojicp"
 path = "src/lib/lib.rs"
 
 [dependencies]
-clap = { version = "4.1.4", features = ["derive"] }
-termion = "2.0.1"
-rust-embed = { version = "6.6", features = ["debug-embed"] }
-serde = { version = "1.0.152", features = ["derive"] }
-bk-tree = { version = "0.5", features = ["serde"] }
 bincode = "1.3"
+bk-tree = { version = "0.5", features = ["serde"] }
+clap = { version = "4.1.4", features = ["derive"] }
 clipboard-anywhere = "0.2.1"
-thiserror = "1.0.40"
 crossterm = "0.26"
 ratatui = { version = "0.21.0", features = ["crossterm"] }
-
-[build-dependencies]
-clap = { version = "4.1.4", features = ["derive"] }
-termion = "2.0.1"
-arboard = "3.2.0"
 rust-embed = { version = "6.6", features = ["debug-embed"] }
 serde = { version = "1.0.152", features = ["derive"] }
-bk-tree = { version = "0.5", features = ["serde"] }
+termion = "2.0.1"
+thiserror = "1.0.40"
+
+[build-dependencies]
+arboard = "3.2.0"
 bincode = "1.3"
+bk-tree = { version = "0.5", features = ["serde"] }
+clap = { version = "4.1.4", features = ["derive"] }
+rust-embed = { version = "6.6", features = ["debug-embed"] }
+serde = { version = "1.0.152", features = ["derive"] }
+termion = "2.0.1"
 
 [dev-dependencies]
 criterion = { version = "0.5", features = ["html_reports"] }
 
 [[bench]]
-name = "search_direct"
 harness = false
+name = "search_direct"

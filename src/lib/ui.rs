@@ -344,7 +344,7 @@ fn ui<B: Backend>(f: &mut Frame<B>, app: &mut App) {
     // |                                                      |
     // | 1. crab      🦀                                      |
     // | 2. snake     🐍                                      |
-    // | 3. coffee    ☕                                      |
+    // | 3. coffee    ☕                                       |
     // | ...                                                  |
     // |______________________________________________________|
     let chunks = Layout::default()

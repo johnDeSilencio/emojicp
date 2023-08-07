@@ -35,14 +35,14 @@ mod tests {
 
         // emojis with short descriptions are displayed properly
         pair.description = String::from("monkey");
-        assert_eq!("monkey\t\t\t🐵", format!("{}", pair));
+        assert_eq!("monkey              🐵", format!("{}", pair));
 
         // emojis with medium descriptions are displayed properly
         pair.description = String::from("cool monkey");
-        assert_eq!("cool monkey\t\t🐵", format!("{}", pair));
+        assert_eq!("cool monkey         🐵", format!("{}", pair));
 
         // emojis with long descriptions are displayed properly
         pair.description = String::from("very cool monkey");
-        assert_eq!("very cool monkey\t🐵", format!("{}", pair));
+        assert_eq!("very cool monkey    🐵", format!("{}", pair));
     }
 }
